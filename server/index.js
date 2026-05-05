@@ -3,6 +3,8 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import http from 'http';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { Server } from 'socket.io';
 import authRoutes from './routes/authRoutes.js';
 import interviewRoutes from './routes/interviewRoutes.js';
@@ -17,6 +19,8 @@ import progressRoutes from './routes/progress.js';
 import { startPipeline } from './services/pipelineController.js';
 import generateAnalytics from './services/analyticsGenerator.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const server = http.createServer(app);
@@ -189,6 +193,10 @@ app.use((err, req, res, next) => {
     message: err.message
   });
 });
+
+// Serve Frontend
+app.use(express.static(path.join(__dirname, '../client/dist')));
+app.get('*', (req, res) => res.sendFile(path.resolve(__dirname, '../client', 'dist', 'index.html')));
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
