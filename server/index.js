@@ -196,10 +196,12 @@ app.use((err, req, res, next) => {
 
 // Serve Frontend
 app.use(express.static(path.join(__dirname, '../client/dist')));
-app.get('*', (req, res) => res.sendFile(path.resolve(__dirname, '../client', 'dist', 'index.html')));
-
-app.use((req, res) => {
-  res.status(404).json({ error: 'Route not found' });
+app.use((req, res, next) => {
+  if (req.method === 'GET' && !req.path.startsWith('/api/')) {
+    res.sendFile(path.resolve(__dirname, '../client', 'dist', 'index.html'));
+  } else {
+    res.status(404).json({ error: 'Route not found' });
+  }
 });
 
 const PORT = process.env.PORT || 5000;
