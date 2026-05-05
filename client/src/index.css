@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+@media (max-width: 768px) {
+  .interview-layout {
+    flex-direction: column !important;
+    height: auto !important;
+    overflow-y: auto !important;
+  }
+  .camera-panel {
+    width: 100% !important;
+    height: 240px !important;
+  }
+  .camera-feed {
+    height: 240px !important;
+    min-height: unset !important;
+  }
+  .question-panel {
+    width: 100% !important;
+    padding-bottom: 80px;
+  }
+}

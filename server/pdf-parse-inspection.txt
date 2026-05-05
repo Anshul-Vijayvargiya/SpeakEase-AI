@@ -1,0 +1,4 @@
+Type of pdfParse: object
+Keys of pdfParse: AbortException, FormatError, InvalidPDFException, Line, LineDirection, LineStore, PDFParse, PasswordException, Point, Rectangle, ResponseException, Shape, Table, UnknownErrorException, VerbosityLevel, getException
+Type of pdfParse.PDFParse: function
+Is pdfParse.PDFParse a constructor? Yes
