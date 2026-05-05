@@ -26,6 +26,7 @@ const app = express();
 const server = http.createServer(app);
 const ALLOWED_ORIGINS = [
   process.env.CLIENT_URL,
+  'https://speakease-ai.onrender.com',
   'http://localhost:3000',
   'http://localhost:5173',
   'http://localhost:5174'
@@ -186,13 +187,7 @@ io.on('connection', (socket) => {
   });
 });
 
-app.use((err, req, res, next) => {
-  console.error('Error:', err.stack);
-  res.status(500).json({
-    error: 'Something went wrong!',
-    message: err.message
-  });
-});
+
 
 // Serve Frontend
 app.use(express.static(path.join(__dirname, '../client/dist')));
@@ -202,6 +197,14 @@ app.use((req, res, next) => {
   } else {
     res.status(404).json({ error: 'Route not found' });
   }
+});
+
+app.use((err, req, res, next) => {
+  console.error('Error:', err.stack);
+  res.status(500).json({
+    error: 'Something went wrong!',
+    message: err.message
+  });
 });
 
 const PORT = process.env.PORT || 5000;
