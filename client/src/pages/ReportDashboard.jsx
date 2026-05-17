@@ -303,7 +303,7 @@ const ReportDashboard = () => {
                   <video 
                     controls 
                     className="w-full h-full object-cover"
-                    src={`http://localhost:5001/api/interview/${id}/video`}
+                    src={data?.videoUrl ? `http://localhost:5001${data.videoUrl}` : ""}
                   />
                 </div>
 

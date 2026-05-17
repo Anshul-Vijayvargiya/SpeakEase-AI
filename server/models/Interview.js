@@ -56,6 +56,7 @@ const InterviewSchema = new mongoose.Schema({
     finalFeedback: { type: String, default: '' },
     strengths: [{ type: String }],
     improvements: [{ type: String }],
+    videoUrl: { type: String, default: '' },
     createdAt: { type: Date, default: Date.now }
 });
 

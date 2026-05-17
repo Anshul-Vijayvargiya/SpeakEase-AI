@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, History, LineChart, Settings, 
-  LogOut, User as UserIcon, Zap, ChevronRight
+  LogOut, User as UserIcon, Zap, ChevronRight, FileText
 } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 
@@ -14,6 +14,7 @@ const Sidebar = () => {
     { icon: <LayoutDashboard className="w-5 h-5" />, label: 'Dashboard', path: '/dashboard' },
     { icon: <History className="w-5 h-5" />, label: 'History', path: '/history' },
     { icon: <LineChart className="w-5 h-5" />, label: 'Progress', path: '/progress' },
+    { icon: <FileText className="w-5 h-5" />, label: 'Resume', path: '/resume' },
     { icon: <Settings className="w-5 h-5" />, label: 'Settings', path: '/settings' },
   ];
 

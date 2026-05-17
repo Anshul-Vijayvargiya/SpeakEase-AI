@@ -31,6 +31,7 @@ const InterviewPage = () => {
   
   const canvasRef = useRef(null);
   const mediaRecorderRef = useRef(null);
+  const recordedChunks = useRef([]);
   const timerRef = useRef(null);
 
   const videoRef = useRef(null);
@@ -100,6 +101,13 @@ const InterviewPage = () => {
         // MediaRecorder setup
         const recorder = new MediaRecorder(stream);
         mediaRecorderRef.current = recorder;
+        
+        recorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) {
+            recordedChunks.current.push(e.data);
+          }
+        };
+
         recorder.start(1000); // 1s chunks
       } catch (err) {
         toast.error("Media access failed");
@@ -107,6 +115,9 @@ const InterviewPage = () => {
     };
     startMedia();
     return () => {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+      }
       if (videoRef.current?.srcObject) {
         videoRef.current.srcObject.getTracks().forEach(t => t.stop());
       }
@@ -141,6 +152,20 @@ const InterviewPage = () => {
     if (status === 'finished') {
       const finalize = async () => {
         try {
+          // Stop recording and wait a moment for the last chunks
+          if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+            mediaRecorderRef.current.stop();
+          }
+          await new Promise(r => setTimeout(r, 500));
+          
+          if (recordedChunks.current.length > 0) {
+            const blob = new Blob(recordedChunks.current, { type: 'video/webm' });
+            const formData = new FormData();
+            formData.append('video', blob, 'interview-recording.webm');
+            
+            await API.post(`/interview/${id}/video`, formData).catch(e => console.error("Video upload failed:", e));
+          }
+
           await API.post(`/interview/${id}/finish`);
           navigate(`/processing/${id}`);
         } catch (err) {

@@ -59,6 +59,25 @@ router.get('/:id', verifyToken, getInterview);
 // Delete specific interview
 router.delete('/:id', verifyToken, deleteInterview);
 
+import videoUpload from '../middlewares/videoUploadMiddleware.js';
+
+router.post('/:id/video', verifyToken, videoUpload.single('video'), async (req, res) => {
+  try {
+    const interview = await Interview.findById(req.params.id);
+    if (!interview) return res.status(404).json({ message: 'Interview not found' });
+    if (!req.file) return res.status(400).json({ message: 'Video upload failed' });
+    
+    // Store the relative path, frontend will fetch via /uploads/videos/...
+    interview.videoUrl = `/uploads/videos/${req.file.filename}`;
+    await interview.save();
+    
+    res.json({ videoUrl: interview.videoUrl });
+  } catch (err) {
+    console.error("Video upload error:", err);
+    res.status(500).json({ message: 'Server error during video upload' });
+  }
+});
+
 router.get('/:id/status', verifyToken, async (req, res) => {
   try {
     const interview = await Interview.findById(req.params.id);

@@ -16,6 +16,7 @@ import PracticeDashboard from "./pages/PracticeDashboard";
 import ProcessingPage from "./pages/ProcessingPage"; // Will be created in Phase 5
 import HistoryPage from "./pages/HistoryPage";
 import ProgressPage from "./pages/ProgressPage";
+import ResumeAnalysisPage from "./pages/ResumeAnalysisPage";
 import SettingsPage from "./pages/SettingsPage";
 
 const ProtectedRoute = ({ children }) => {
@@ -61,6 +62,7 @@ function App() {
           <Route path="/practice/:topicId" element={<ProtectedRoute><PracticeDashboard /></ProtectedRoute>} />
           <Route path="/history" element={<ProtectedRoute><HistoryPage /></ProtectedRoute>} />
           <Route path="/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />
+          <Route path="/resume" element={<ProtectedRoute><ResumeAnalysisPage /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
 
           {/* Fallback */}

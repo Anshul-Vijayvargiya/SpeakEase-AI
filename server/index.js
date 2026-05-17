@@ -16,6 +16,7 @@ import resumeRoutes from './routes/resume.js';
 import sessionsRoutes from './routes/sessions.js';
 import dashboardRoutes from './routes/dashboard.js';
 import progressRoutes from './routes/progress.js';
+import resumeAnalysisRoutes from './routes/resumeAnalysis.js';
 import { startPipeline } from './services/pipelineController.js';
 import generateAnalytics from './services/analyticsGenerator.js';
 
@@ -79,6 +80,7 @@ app.use('/api/reports', reportRoutes);
 app.use('/', sessionsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/progress', progressRoutes);
+app.use('/api/resume-analysis', resumeAnalysisRoutes);
 
 app.get('/api/test', (req, res) => {
   res.json({ message: 'Server is running!' });
@@ -189,6 +191,9 @@ io.on('connection', (socket) => {
 
 
 
+// Serve Static Uploads
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Serve Frontend
 app.use(express.static(path.join(__dirname, '../client/dist')));
 app.use((req, res, next) => {
@@ -212,6 +217,17 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Test the server: http://localhost:${PORT}/api/test`);
+});
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`\n❌ Port ${PORT} is already in use.`);
+    console.error(`   Run this to free it:  npx kill-port ${PORT}`);
+    console.error(`   Or use PowerShell:    Get-NetTCPConnection -LocalPort ${PORT} | Select -Expand OwningProcess | % { taskkill /PID $_ /F }\n`);
+    process.exit(1);
+  } else {
+    throw err;
+  }
 });
 
 process.on('unhandledRejection', (err) => {
