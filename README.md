@@ -6,9 +6,10 @@ SpeakEase AI is an advanced, AI-powered interview simulator designed to help can
 
 - **AI-Driven Interviews**: Utilizes Google Generative AI and OpenAI models to generate dynamic, context-aware interview questions based on your target role or uploaded resume.
 - **Resume Parsing**: Automatically extracts skills and experiences from uploaded resumes (PDF/DOCX) using advanced parsing tools.
-- **Real-time Face Tracking**: Integrates `@mediapipe/face_mesh` and camera utilities to monitor user engagement and provide feedback.
+- **Real-time Face & Speech Tracking**: Integrates `@mediapipe/face_mesh` and the Web Speech API to monitor user engagement, eye contact, attention, filler words, and speaking pace (WPM).
+- **AI Interviewer Voice (TTS)**: Automatically reads out interview questions using the browser's native Text-to-Speech synthesis for a more realistic interview feel.
 - **Real-time Communication**: Uses Socket.io for seamless, low-latency communication between the client and server during the interview.
-- **Rich Dashboard & Analytics**: Visualizes interview performance, history, and progress using Recharts and interactive UI components.
+- **Rich Dashboard & Behavioral Analytics**: Visualizes interview performance, history, and deep behavioral metrics (speech analytics, attention tracking) using Recharts and interactive UI components.
 - **Cloud Storage**: Securely stores media and files using Cloudinary and Firebase.
 - **Modern UI/UX**: Built with React, Tailwind CSS, and Framer Motion for a stunning, responsive, and highly interactive user experience.
 
