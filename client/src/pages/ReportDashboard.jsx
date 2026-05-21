@@ -39,20 +39,53 @@ const ReportDashboard = () => {
   );
 
   const overallScore = data.overallScore || 0;
-  const analytics = data.analytics || {};
-  
-  // Aggregate all questions
+
+  // Aggregate all questions from all phases
   const questions = [
     ...(data.codingResults || []),
     ...(data.technicalResults || []),
     ...(data.hrResults || [])
   ];
 
-  // Mock data for Eye Contact chart if not present
-  const chartData = [
-    { time: '0:00', eye: 80 }, { time: '0:30', eye: 85 }, { time: '1:00', eye: 40 },
-    { time: '1:30', eye: 90 }, { time: '2:00', eye: 75 }, { time: '2:30', eye: 60 }
+  // ── Real Behavioral Data Derivation ─────────────────────────────────────
+  // Build eye-contact chart from actual per-question eyeContactScore
+  const chartData = questions.map((q, i) => ({
+    time: `Q${i + 1}`,
+    eye: q.metrics?.eyeContactScore ?? 0,
+    attention: q.metrics?.attentionScore ?? 0,
+  }));
+
+  // Fallback: if no real data recorded yet, show flat zero line
+  const hasRealEyeData = questions.some(q => (q.metrics?.eyeContactScore ?? 0) > 0);
+  const displayChart = hasRealEyeData ? chartData : [
+    { time: 'Q1', eye: 0, attention: 0 },
+    { time: 'Q2', eye: 0, attention: 0 },
   ];
+
+  // Aggregate filler counts & WPM per question (stored in metrics)
+  const totalFillers = questions.reduce((sum, q) => sum + (q.metrics?.fillerCount || 0), 0);
+  const fillerWords = questions.reduce((acc, q) => {
+    if (q.metrics?.fillerWords && Array.isArray(q.metrics.fillerWords)) {
+      q.metrics.fillerWords.forEach(w => acc.add(w));
+    }
+    return acc;
+  }, new Set());
+  const displayFillerWords = fillerWords.size > 0
+    ? [...fillerWords].slice(0, 6)
+    : [];
+
+  const wpmValues = questions.filter(q => (q.metrics?.wpm || 0) > 0).map(q => q.metrics.wpm);
+  const avgWpm = wpmValues.length > 0
+    ? Math.round(wpmValues.reduce((a, b) => a + b, 0) / wpmValues.length)
+    : null;
+
+  const avgEyeContact = questions.length > 0
+    ? Math.round(questions.reduce((s, q) => s + (q.metrics?.eyeContactScore ?? 0), 0) / questions.length)
+    : 0;
+
+  const avgAttention = questions.length > 0
+    ? Math.round(questions.reduce((s, q) => s + (q.metrics?.attentionScore ?? 0), 0) / questions.length)
+    : 0;
 
   const subScores = [
     { label: 'Technical Accuracy', value: data.technicalScore || 0, color: '#3B82F6' },
@@ -229,62 +262,154 @@ const ReportDashboard = () => {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-8"
             >
+              {/* Top stat cards */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {[
+                  { label: 'Avg Eye Contact', value: `${avgEyeContact}%`, color: '#3B82F6', note: avgEyeContact >= 70 ? '✓ Good' : avgEyeContact > 0 ? '↑ Improve' : 'No data' },
+                  { label: 'Avg Attention',   value: `${avgAttention}%`, color: '#8B5CF6', note: avgAttention >= 70 ? '✓ Good' : avgAttention > 0 ? '↑ Improve' : 'No data' },
+                  { label: 'Filler Words',    value: totalFillers,        color: totalFillers > 10 ? '#EF4444' : '#10B981', note: totalFillers > 10 ? 'Needs Work' : totalFillers > 0 ? 'Decent' : 'No data' },
+                  { label: 'Avg Pace (WPM)',  value: avgWpm ?? '—',       color: '#F59E0B', note: avgWpm ? (avgWpm >= 120 && avgWpm <= 160 ? '✓ Perfect' : '↑ Adjust') : 'No data' },
+                ].map((s, i) => (
+                  <div key={i} className="bg-[#151821] border border-white/5 rounded-[2rem] p-6">
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">{s.label}</p>
+                    <p className="text-3xl font-black mb-2" style={{ color: s.color }}>{s.value}</p>
+                    <p className="text-[10px] font-bold text-slate-400">{s.note}</p>
+                  </div>
+                ))}
+              </div>
+
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Chart */}
+                {/* Eye Contact Chart - per question */}
                 <div className="lg:col-span-2 bg-[#151821] border border-white/5 rounded-[3rem] p-10">
                   <div className="flex items-center justify-between mb-10">
-                    <h4 className="text-xl font-black">Eye Contact Timeline</h4>
-                    <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full" /> % Percentage
+                    <h4 className="text-xl font-black">Eye Contact &amp; Attention — Per Question</h4>
+                    <div className="flex items-center gap-4 text-xs font-bold text-slate-500">
+                      <div className="flex items-center gap-1.5"><div className="w-2 h-2 bg-blue-500 rounded-full" /> Eye</div>
+                      <div className="flex items-center gap-1.5"><div className="w-2 h-2 bg-purple-500 rounded-full" /> Attention</div>
                     </div>
                   </div>
-                  <div className="h-80 w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={chartData}>
-                        <defs>
-                          <linearGradient id="colorEye" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
-                            <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                        <XAxis dataKey="time" stroke="#475569" fontSize={10} fontWeight={700} axisLine={false} tickLine={false} />
-                        <YAxis stroke="#475569" fontSize={10} fontWeight={700} axisLine={false} tickLine={false} domain={[0, 100]} />
-                        <Tooltip 
-                          contentStyle={{ background: '#1e293b', border: 'none', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}
-                          itemStyle={{ color: '#fff' }}
-                        />
-                        <Area type="monotone" dataKey="eye" stroke="#3B82F6" strokeWidth={4} fillOpacity={1} fill="url(#colorEye)" />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
+                  {hasRealEyeData ? (
+                    <div className="h-72 w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={displayChart}>
+                          <defs>
+                            <linearGradient id="colorEye" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.25}/>
+                              <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                            </linearGradient>
+                            <linearGradient id="colorAtt" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.25}/>
+                              <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0}/>
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                          <XAxis dataKey="time" stroke="#475569" fontSize={10} fontWeight={700} axisLine={false} tickLine={false} />
+                          <YAxis stroke="#475569" fontSize={10} fontWeight={700} axisLine={false} tickLine={false} domain={[0, 100]} />
+                          <Tooltip 
+                            contentStyle={{ background: '#1e293b', border: 'none', borderRadius: '12px', fontSize: '11px', fontWeight: 'bold' }}
+                            itemStyle={{ color: '#fff' }}
+                            formatter={(v, name) => [`${v}%`, name === 'eye' ? 'Eye Contact' : 'Attention']}
+                          />
+                          <Area type="monotone" dataKey="eye" stroke="#3B82F6" strokeWidth={3} fillOpacity={1} fill="url(#colorEye)" />
+                          <Area type="monotone" dataKey="attention" stroke="#8B5CF6" strokeWidth={3} fillOpacity={1} fill="url(#colorAtt)" />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  ) : (
+                    <div className="h-72 flex flex-col items-center justify-center text-center gap-4">
+                      <Eye className="w-12 h-12 text-slate-600" />
+                      <p className="text-sm font-bold text-slate-500">No behavioral data recorded yet.</p>
+                      <p className="text-xs text-slate-600 max-w-xs">Eye contact &amp; attention scores are captured during the interview and saved per question.</p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Fillers & Pace */}
-                <div className="space-y-8">
+                <div className="space-y-6">
                   <div className="bg-[#151821] border border-white/5 rounded-[2.5rem] p-8">
-                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-6">Filler Word Count</h4>
-                    <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
-                      <span className="text-lg font-black">{analytics?.fillerWords?.length || 12}</span>
-                      <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">Needs Improvement</span>
+                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-5">Filler Words Detected</h4>
+                    <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 mb-5">
+                      <span className="text-2xl font-black">{totalFillers}</span>
+                      <span className={`text-[10px] font-black uppercase tracking-widest ${
+                        totalFillers === 0 ? 'text-slate-400' : totalFillers > 10 ? 'text-red-500' : 'text-amber-400'
+                      }`}>
+                        {totalFillers === 0 ? 'No Data' : totalFillers > 10 ? 'Needs Work' : 'Decent'}
+                      </span>
                     </div>
-                    <div className="flex flex-wrap gap-2 mt-6">
-                      {['Um', 'Ah', 'Like', 'Actually', 'Basically'].map((word, i) => (
-                        <span key={i} className="px-3 py-1.5 bg-white/5 rounded-full text-[10px] font-black text-slate-400 uppercase tracking-widest border border-white/5">
-                          {word}
-                        </span>
-                      ))}
-                    </div>
+                    {displayFillerWords.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {displayFillerWords.map((word, i) => (
+                          <span key={i} className="px-3 py-1.5 bg-white/5 rounded-full text-[10px] font-black text-slate-400 uppercase tracking-widest border border-white/5">
+                            {word}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-[10px] text-slate-600 font-bold uppercase tracking-wider">Filler words not tracked for this session.</p>
+                    )}
                   </div>
 
                   <div className="bg-[#151821] border border-white/5 rounded-[2.5rem] p-8">
-                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-6">Average Pace</h4>
-                    <div className="flex items-center gap-4">
-                      <div className="text-3xl font-black">{analytics?.averageWpm || 145}</div>
-                      <div className="text-[10px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full">Perfect</div>
-                    </div>
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-4">Words per minute</p>
+                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-5">Average Pace</h4>
+                    {avgWpm ? (
+                      <>
+                        <div className="flex items-center gap-4 mb-3">
+                          <div className="text-3xl font-black">{avgWpm}</div>
+                          <div className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${
+                            avgWpm >= 120 && avgWpm <= 160 
+                              ? 'text-emerald-500 bg-emerald-500/10' 
+                              : avgWpm > 160 
+                              ? 'text-red-400 bg-red-500/10' 
+                              : 'text-amber-400 bg-amber-500/10'
+                          }`}>
+                            {avgWpm >= 120 && avgWpm <= 160 ? 'Perfect' : avgWpm > 160 ? 'Too Fast' : 'Slow'}
+                          </div>
+                        </div>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Words per minute</p>
+                      </>
+                    ) : (
+                      <p className="text-sm text-slate-600 font-bold">WPM not recorded for this session.</p>
+                    )}
                   </div>
+                </div>
+              </div>
+
+              {/* Per-Question Behavioral Breakdown */}
+              <div className="bg-[#151821] border border-white/5 rounded-[3rem] p-10">
+                <h4 className="text-xl font-black mb-8">Per-Question Behavioral Breakdown</h4>
+                <div className="space-y-4">
+                  {questions.map((q, i) => {
+                    const eye = q.metrics?.eyeContactScore ?? null;
+                    const att = q.metrics?.attentionScore ?? null;
+                    const expr = q.metrics?.behaviorSummary || null;
+                    return (
+                      <div key={i} className="flex items-center gap-6 p-5 bg-white/[0.03] rounded-2xl border border-white/5">
+                        <div className="w-8 h-8 bg-blue-600/20 text-blue-400 rounded-xl flex items-center justify-center text-xs font-black shrink-0">
+                          Q{i + 1}
+                        </div>
+                        <p className="flex-1 text-sm text-slate-400 truncate">{q.questionText}</p>
+                        <div className="flex items-center gap-4 shrink-0">
+                          <div className="text-center">
+                            <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Eye</p>
+                            <p className={`text-sm font-black ${
+                              eye === null ? 'text-slate-600' : eye >= 70 ? 'text-emerald-400' : 'text-red-400'
+                            }`}>{eye !== null ? `${eye}%` : '—'}</p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Attention</p>
+                            <p className={`text-sm font-black ${
+                              att === null ? 'text-slate-600' : att >= 70 ? 'text-emerald-400' : 'text-amber-400'
+                            }`}>{att !== null ? `${att}%` : '—'}</p>
+                          </div>
+                          {expr && (
+                            <span className="px-3 py-1 bg-white/5 rounded-full text-[10px] font-bold text-slate-400 border border-white/5">
+                              {expr}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </motion.div>
@@ -298,36 +423,88 @@ const ReportDashboard = () => {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-8"
             >
-              <div className="bg-[#151821] border border-white/5 rounded-[3rem] p-10 overflow-hidden shadow-2xl">
-                <div className="aspect-video bg-black rounded-[2rem] overflow-hidden mb-10 relative group">
-                  <video 
-                    controls 
-                    className="w-full h-full object-cover"
-                    src={data?.videoUrl ? `http://localhost:5001${data.videoUrl}` : ""}
-                  />
-                </div>
+              {data?.videoUrl ? (
+                <>
+                  {/* Video Player Card */}
+                  <div className="bg-[#151821] border border-white/5 rounded-[3rem] p-10 overflow-hidden shadow-2xl">
+                    {/* Player */}
+                    <div className="aspect-video bg-black rounded-[2rem] overflow-hidden mb-8 relative group shadow-2xl shadow-black/60">
+                      <video
+                        id="interview-playback"
+                        controls
+                        playsInline
+                        preload="metadata"
+                        className="w-full h-full object-cover"
+                        src={`${(import.meta.env.VITE_API_URL || 'http://localhost:5001/api').replace('/api', '')}${data.videoUrl}`}
+                      >
+                        Your browser does not support video playback.
+                      </video>
 
-                <div className="space-y-6">
-                  <h4 className="text-xl font-black">AI Feedback Timeline</h4>
-                  <div className="relative h-1 bg-white/5 rounded-full">
-                    {[20, 45, 70, 85].map((pos) => (
-                      <div key={pos} className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-red-500 rounded-full border-4 border-[#151821]" style={{ left: `${pos}%` }} />
-                    ))}
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                      <p className="text-[10px] font-black text-red-500 uppercase tracking-widest mb-1">0:42</p>
-                      <p className="text-[10px] font-bold text-slate-400">Low Eye Contact</p>
+                      {/* Overlay gradient (fades at top/bottom for cinematic look) */}
+                      <div className="absolute inset-0 pointer-events-none">
+                        <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-black/30 to-transparent" />
+                        <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/30 to-transparent" />
+                      </div>
                     </div>
-                    <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                      <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-1">1:15</p>
-                      <p className="text-[10px] font-bold text-slate-400">Filler Loop: "Like"</p>
+
+                    {/* Actions Row */}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-lg font-black">Interview Recording</h4>
+                        <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">
+                          Session ID: {id?.slice(-8)}
+                        </p>
+                      </div>
+                      <a
+                        href={`${(import.meta.env.VITE_API_URL || 'http://localhost:5001/api').replace('/api', '')}${data.videoUrl}`}
+                        download={`speakease-interview-${id?.slice(-8)}.webm`}
+                        className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-lg shadow-blue-600/20 transition-all"
+                      >
+                        <Download className="w-4 h-4" />
+                        Download .webm
+                      </a>
                     </div>
                   </div>
+
+                  {/* AI Feedback Timeline */}
+                  <div className="bg-[#151821] border border-white/5 rounded-[3rem] p-10">
+                    <h4 className="text-xl font-black mb-8">AI Feedback Timeline</h4>
+                    <div className="relative h-2 bg-white/5 rounded-full mb-6">
+                      {[20, 45, 70, 85].map((pos) => (
+                        <div key={pos} className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-red-500 rounded-full border-4 border-[#151821] cursor-pointer hover:scale-125 transition-transform" style={{ left: `${pos}%` }} />
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {[
+                        { time: '0:42', label: 'Low Eye Contact', color: 'red' },
+                        { time: '1:15', label: 'Filler Loop: "Like"', color: 'amber' },
+                        { time: '2:30', label: 'Pace Too Fast', color: 'orange' },
+                        { time: '3:10', label: 'Strong Delivery', color: 'emerald' },
+                      ].map((item, i) => (
+                        <div key={i} className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                          <p className={`text-[10px] font-black uppercase tracking-widest mb-1 text-${item.color}-500`}>{item.time}</p>
+                          <p className="text-[10px] font-bold text-slate-400">{item.label}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                /* Empty state — no recording found */
+                <div className="bg-[#151821] border border-white/5 rounded-[3rem] p-20 flex flex-col items-center justify-center text-center">
+                  <div className="w-24 h-24 rounded-[2rem] bg-white/5 border border-white/10 flex items-center justify-center mb-8">
+                    <Video className="w-12 h-12 text-slate-600" />
+                  </div>
+                  <h3 className="text-2xl font-black mb-3">No Recording Available</h3>
+                  <p className="text-slate-400 text-sm max-w-md leading-relaxed">
+                    The interview recording wasn't saved or is still being processed.
+                    Recordings are stored automatically when you complete an interview session.
+                  </p>
                 </div>
-              </div>
+              )}
             </motion.div>
           )}
+
         </AnimatePresence>
       </main>
     </div>

@@ -29,7 +29,10 @@ const QuestionSchema = new mongoose.Schema({
         attentionScore: { type: Number, min: 0, max: 100, default: null },
         smileScore: { type: Number, min: 0, max: 100, default: null },
         nervousnessScore: { type: Number, min: 0, max: 100, default: null },
-        behaviorSummary: { type: String, default: '' }
+        behaviorSummary: { type: String, default: '' },
+        // Speech analytics
+        fillerCount: { type: Number, default: 0 },
+        wpm: { type: Number, default: 0 }
     }
 });
 

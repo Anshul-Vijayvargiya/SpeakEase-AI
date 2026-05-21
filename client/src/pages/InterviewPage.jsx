@@ -5,7 +5,7 @@ import {
   Zap, Mic, CheckCircle2, Video, 
   AlertCircle, Loader2, Play, Pause,
   Users, MessageSquare, Timer as ClockIcon,
-  Eye, Smile, BarChart3
+  Eye, Smile, BarChart3, Volume2, VolumeX
 } from 'lucide-react';
 import useSessionStore from '../store/sessionStore';
 import API from '../api';
@@ -14,6 +14,7 @@ import RoundTransition from './RoundTransition';
 import useAudioAnalyser from '../hooks/useAudioAnalyser';
 import useFaceMesh from '../hooks/useFaceMesh';
 import BottomHUD from '../components/BottomHUD';
+import useTTS from '../hooks/useTTS';
 
 const InterviewPage = () => {
   const { id } = useParams();
@@ -24,7 +25,7 @@ const InterviewPage = () => {
     difficulty: sessionDifficulty
   } = useSessionStore();
 
-  const [isAiSpeaking, setIsAiSpeaking] = useState(false);
+  const { speak, stop: stopSpeaking, isSpeaking: isAiSpeaking } = useTTS();
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [timer, setTimer] = useState(0);
   const [answerState, setAnswerState] = useState("idle");
@@ -39,6 +40,20 @@ const InterviewPage = () => {
   const { transcript, isListening, fillerCount, wpm, startListening, stopListening, resetTranscript } = useAudioAnalyser();
 
   const currentQuestion = questions[currentIndex];
+
+  // ── Speak question whenever it changes ──────────────────────────────────
+  useEffect(() => {
+    if (!currentQuestion?.questionText) return;
+    // Small delay so the question card animation plays first
+    const t = setTimeout(() => {
+      speak(currentQuestion.questionText);
+    }, 400);
+    return () => {
+      clearTimeout(t);
+      stopSpeaking(); // cancel speech when question changes / unmounts
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentQuestion?.questionText]);
 
   // 1. Initial Fetch
   useEffect(() => {
@@ -152,30 +167,38 @@ const InterviewPage = () => {
     if (status === 'finished') {
       const finalize = async () => {
         try {
-          // Stop recording and wait a moment for the last chunks
-          if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-            mediaRecorderRef.current.stop();
-          }
-          await new Promise(r => setTimeout(r, 500));
-          
+          // Stop recording and properly wait for onstop to fire (all chunks collected)
+          await new Promise((resolve) => {
+            const recorder = mediaRecorderRef.current;
+            if (!recorder || recorder.state === 'inactive') {
+              resolve();
+              return;
+            }
+            recorder.onstop = resolve;
+            recorder.stop();
+          });
+
           if (recordedChunks.current.length > 0) {
             const blob = new Blob(recordedChunks.current, { type: 'video/webm' });
             const formData = new FormData();
             formData.append('video', blob, 'interview-recording.webm');
-            
-            await API.post(`/interview/${id}/video`, formData).catch(e => console.error("Video upload failed:", e));
+
+            await API.post(`/interview/${id}/video`, formData, {
+              headers: { 'Content-Type': 'multipart/form-data' }
+            }).catch(e => console.error('Video upload failed:', e));
           }
 
           await API.post(`/interview/${id}/finish`);
           navigate(`/processing/${id}`);
         } catch (err) {
-          console.error("Finalize error:", err);
+          console.error('Finalize error:', err);
           navigate(`/processing/${id}`);
         }
       };
       finalize();
     }
   }, [status, id, navigate]);
+
 
   // Handle Round Transitions
   useEffect(() => {
@@ -189,12 +212,15 @@ const InterviewPage = () => {
   }, [currentRound, currentIndex, questions]);
 
   const handleStartAnswering = () => {
+    // Stop AI speaking before mic opens
+    if (isAiSpeaking) stopSpeaking();
     startListening();
     setAnswerState("listening");
   };
 
   const handleSubmitAnswer = async () => {
     stopListening();
+    stopSpeaking();
     const finalAnswer = transcript.replace(/\[.*?\]$/, "").trim();
     if (!finalAnswer) {
       alert("No answer detected. Please speak into your microphone.");
@@ -210,7 +236,9 @@ const InterviewPage = () => {
         behavioralMetrics: { 
           eyeContact: eyeContactPercent, 
           attention: 100, 
-          expression: expression 
+          expression: expression,
+          fillerCount: fillerCount,
+          wpm: wpm
         }
       });
       
@@ -310,6 +338,43 @@ const InterviewPage = () => {
               <MessageSquare className="w-6 h-6" />
             </div>
 
+            {/* ── AI Speaking indicator ── */}
+            <AnimatePresence>
+              {isAiSpeaking && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  className="flex items-center justify-between mb-5 px-4 py-2.5 bg-blue-50 border border-blue-200 rounded-2xl"
+                >
+                  <div className="flex items-center gap-3">
+                    {/* Animated sound bars */}
+                    <div className="flex items-end gap-[3px] h-5">
+                      {[1, 2, 3, 4, 3].map((h, i) => (
+                        <span
+                          key={i}
+                          className="w-1 rounded-full bg-blue-500"
+                          style={{
+                            height: `${h * 4}px`,
+                            animation: `soundBar 0.8s ease-in-out ${i * 0.12}s infinite alternate`,
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-sm font-bold text-blue-700">AI is reading the question…</span>
+                  </div>
+                  <button
+                    onClick={stopSpeaking}
+                    title="Stop speaking"
+                    className="flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-100 hover:bg-blue-200 px-3 py-1.5 rounded-xl transition-all"
+                  >
+                    <VolumeX className="w-3.5 h-3.5" />
+                    Stop
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <h2 className="text-2xl md:text-3xl font-black text-slate-900 text-center mb-8 leading-tight">
               {currentQuestion?.questionText}
             </h2>
@@ -325,8 +390,12 @@ const InterviewPage = () => {
                 disabled={isListening || isEvaluating}
                 className="flex-1 h-16 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white font-black rounded-2xl shadow-xl shadow-blue-600/20 flex items-center justify-center gap-3 transition-all group"
               >
-                <Mic className={`w-5 h-5 ${isListening ? 'animate-pulse' : ''}`} />
-                {transcript ? 'RESUME ANSWER' : 'START ANSWERING'}
+                {isAiSpeaking ? (
+                  <><Volume2 className="w-5 h-5 animate-pulse" /> SPEAKING…</>
+                ) : (
+                  <><Mic className={`w-5 h-5 ${isListening ? 'animate-pulse' : ''}`} />
+                  {transcript ? 'RESUME ANSWER' : 'START ANSWERING'}</>
+                )}
               </button>
               
               <button

@@ -485,7 +485,9 @@ export const evaluateAnswer = async (req, res) => {
       ...evaluation,
       eyeContactScore: behavioralMetrics?.eyeContact || 0,
       attentionScore: behavioralMetrics?.attention || 0,
-      behaviorSummary: behavioralMetrics?.expression || 'Focused'
+      behaviorSummary: behavioralMetrics?.expression || 'Focused',
+      fillerCount: behavioralMetrics?.fillerCount ?? 0,
+      wpm: behavioralMetrics?.wpm ?? 0
     };
 
     if (interview.status === 'Pending') {
