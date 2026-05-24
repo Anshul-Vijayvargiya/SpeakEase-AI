@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import { verifyToken } from '../middlewares/authMiddleware.js';
+import admin from '../config/firebaseAdmin.js';
 
 const router = express.Router();
 
@@ -89,6 +90,72 @@ router.post('/api/auth/login', async (req, res) => {
   } catch (err) {
     console.error('[Auth Login Error]:', err);
     return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.post('/api/auth/google', async (req, res) => {
+  try {
+    const { idToken } = req.body;
+
+    if (!idToken) {
+      return res.status(400).json({ message: 'ID token is required' });
+    }
+
+    if (!admin || typeof admin.auth !== 'function') {
+      console.error('[Google Auth Error]: Firebase Admin has not been correctly initialized.');
+      return res.status(500).json({ 
+        message: 'Firebase Admin is not configured on the server. Please verify environment variables.' 
+      });
+    }
+
+    let decodedToken;
+    try {
+      decodedToken = await admin.auth().verifyIdToken(idToken);
+    } catch (firebaseErr) {
+      console.error('[Firebase Token Verification Error]:', firebaseErr);
+      return res.status(401).json({ 
+        message: 'Invalid Google token. Authentication failed.',
+        error: firebaseErr.message
+      });
+    }
+
+    const { email, name } = decodedToken;
+    if (!email) {
+      return res.status(400).json({ message: 'Email address not found in Google account.' });
+    }
+
+    let user = await User.findOne({ email });
+    if (!user) {
+      // Create new user for social signup
+      user = await User.create({
+        name: name || email.split('@')[0],
+        email: email,
+        firebaseUid: decodedToken.uid,
+        credits: 10,
+        preferredLanguage: 'JavaScript',
+        plan: 'free',
+        stats: {
+          readinessScore: 0,
+          interviewsTaken: 0,
+          practiceHours: 0,
+          weakTopic: ''
+        }
+      });
+    } else if (!user.firebaseUid) {
+      // Link the existing user with their Firebase UID if it is missing
+      user.firebaseUid = decodedToken.uid;
+      await user.save();
+    }
+
+    const token = generateToken(user._id);
+
+    return res.status(200).json({
+      token,
+      user: buildUserResponse(user)
+    });
+  } catch (err) {
+    console.error('[Auth Google Error]:', err);
+    return res.status(500).json({ message: 'Server error during Google authentication' });
   }
 });
 
