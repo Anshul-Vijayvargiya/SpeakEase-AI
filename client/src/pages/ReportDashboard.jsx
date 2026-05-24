@@ -435,7 +435,7 @@ const ReportDashboard = () => {
                         playsInline
                         preload="metadata"
                         className="w-full h-full object-cover"
-                        src={`${(import.meta.env.VITE_API_URL || 'http://localhost:5001/api').replace('/api', '')}${data.videoUrl}`}
+                        src={`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : (import.meta.env.PROD ? window.location.origin : 'http://localhost:5001')}${data.videoUrl}`}
                       >
                         Your browser does not support video playback.
                       </video>
@@ -456,7 +456,7 @@ const ReportDashboard = () => {
                         </p>
                       </div>
                       <a
-                        href={`${(import.meta.env.VITE_API_URL || 'http://localhost:5001/api').replace('/api', '')}${data.videoUrl}`}
+                        href={`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : (import.meta.env.PROD ? window.location.origin : 'http://localhost:5001')}${data.videoUrl}`}
                         download={`speakease-interview-${id?.slice(-8)}.webm`}
                         className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-lg shadow-blue-600/20 transition-all"
                       >
