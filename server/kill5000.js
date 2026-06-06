@@ -1,4 +1,4 @@
-const { execSync } = require('child_process');
+import { execSync } from 'child_process';
 try {
     const output = execSync('netstat -ano').toString();
     const lines = output.split('\n');

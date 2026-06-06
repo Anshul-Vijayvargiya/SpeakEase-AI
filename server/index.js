@@ -17,6 +17,7 @@ import sessionsRoutes from './routes/sessions.js';
 import dashboardRoutes from './routes/dashboard.js';
 import progressRoutes from './routes/progress.js';
 import resumeAnalysisRoutes from './routes/resumeAnalysis.js';
+import aptitudeRoutes from './routes/aptitude.js';
 import { startPipeline } from './services/pipelineController.js';
 import generateAnalytics from './services/analyticsGenerator.js';
 
@@ -81,6 +82,7 @@ app.use('/', sessionsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/resume-analysis', resumeAnalysisRoutes);
+app.use('/api/aptitude', aptitudeRoutes);
 
 app.get('/api/test', (req, res) => {
   res.json({ message: 'Server is running!' });

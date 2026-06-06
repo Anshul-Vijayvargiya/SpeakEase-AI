@@ -1,0 +1,584 @@
+{
+  "_id": "6a23b5d18cd3390fbc291cf2",
+  "userId": "699d572c7fdd5b6f05a323d5",
+  "topics": [
+    "Profit & Loss"
+  ],
+  "difficulty": "Mixed",
+  "totalQuestions": 10,
+  "questions": [
+    {
+      "id": 1,
+      "topic": "Profit & Loss",
+      "difficulty": "Easy",
+      "question": "A shopkeeper bought a shirt for $40 and sold it for $50. What is the profit percentage?",
+      "options": {
+        "A": "20%",
+        "B": "25%",
+        "C": "30%",
+        "D": "15%"
+      },
+      "correctAnswer": "B",
+      "solution": {
+        "steps": [
+          "Step 1: Calculate Profit = Selling Price - Cost Price",
+          "Step 2: Profit = $50 - $40 = $10",
+          "Step 3: Calculate Profit Percentage = (Profit ÷ Cost Price) × 100",
+          "Step 4: Profit Percentage = ($10 ÷ $40) × 100 = 25%"
+        ],
+        "finalAnswer": "25%",
+        "formula": "Profit Percentage = (Profit/Cost Price) × 100",
+        "tip": "Profit Percentage helps understand how much you earn compared to your cost."
+      }
+    },
+    {
+      "id": 2,
+      "topic": "Profit & Loss",
+      "difficulty": "Easy",
+      "question": "If a book is sold for $120 after a 20% discount, what was its original price?",
+      "options": {
+        "A": "$144",
+        "B": "$150",
+        "C": "$160",
+        "D": "$180"
+      },
+      "correctAnswer": "A",
+      "solution": {
+        "steps": [
+          "Step 1: Let the original price be x.",
+          "Step 2: Selling Price = Original Price - Discount = x - (20% of x)",
+          "Step 3: Selling Price = x - 0.2x = 0.8x",
+          "Step 4: Set up the equation: 0.8x = $120.",
+          "Step 5: Solve for x: x = $120 ÷ 0.8 = $150."
+        ],
+        "finalAnswer": "$150",
+        "formula": "Selling Price = Original Price - Discount | Discount = (Discount Rate × Original Price)",
+        "tip": "Always calculate the original price using the selling price and discount percentage."
+      }
+    },
+    {
+      "id": 3,
+      "topic": "Profit & Loss",
+      "difficulty": "Medium",
+      "question": "A man sells a bicycle at a loss of 10%. If he bought it for $200, what is the selling price?",
+      "options": {
+        "A": "$180",
+        "B": "$190",
+        "C": "$200",
+        "D": "$210"
+      },
+      "correctAnswer": "A",
+      "solution": {
+        "steps": [
+          "Step 1: Calculate Loss = 10% of Cost Price.",
+          "Step 2: Loss = 10% of $200 = 0.1 × $200 = $20.",
+          "Step 3: Calculate Selling Price = Cost Price - Loss.",
+          "Step 4: Selling Price = $200 - $20 = $180."
+        ],
+        "finalAnswer": "$180",
+        "formula": "Selling Price = Cost Price - Loss | Loss = (Loss Percentage × Cost Price)",
+        "tip": "When selling at a loss, subtract the loss from the cost price to find the selling price."
+      }
+    },
+    {
+      "id": 4,
+      "topic": "Profit & Loss",
+      "difficulty": "Medium",
+      "question": "A trader marks a price on an item at $150 and offers a 25% discount. What is the selling price?",
+      "options": {
+        "A": "$112.50",
+        "B": "$120.00",
+        "C": "$125.00",
+        "D": "$130.00"
+      },
+      "correctAnswer": "A",
+      "solution": {
+        "steps": [
+          "Step 1: Calculate Discount = 25% of Marked Price.",
+          "Step 2: Discount = 0.25 × $150 = $37.50.",
+          "Step 3: Calculate Selling Price = Marked Price - Discount.",
+          "Step 4: Selling Price = $150 - $37.50 = $112.50."
+        ],
+        "finalAnswer": "$112.50",
+        "formula": "Selling Price = Marked Price - Discount | Discount = (Discount Rate × Marked Price)",
+        "tip": "Calculate the discount first before arriving at the selling price."
+      }
+    },
+    {
+      "id": 5,
+      "topic": "Profit & Loss",
+      "difficulty": "Hard",
+      "question": "A person marks his goods at a price that gives him a profit of 40% after giving a discount of 20%. If the cost price is $100, what is the marked price?",
+      "options": {
+        "A": "$150",
+        "B": "$160",
+        "C": "$180",
+        "D": "$200"
+      },
+      "correctAnswer": "B",
+      "solution": {
+        "steps": [
+          "Step 1: Let the marked price be x.",
+          "Step 2: Selling Price = Cost Price + Profit = $100 + 40% of $100 = $140.",
+          "Step 3: Selling Price after discount = Marked Price - Discount.",
+          "Step 4: Selling Price = x - 20% of x = 0.8x.",
+          "Step 5: Set up the equation: 0.8x = $140.",
+          "Step 6: Solve for x: x = $140 ÷ 0.8 = $175."
+        ],
+        "finalAnswer": "$175",
+        "formula": "Selling Price = Marked Price - Discount | Profit = (Profit Percentage × Cost Price)",
+        "tip": "Determine the selling price first before finding the marked price."
+      }
+    },
+    {
+      "id": 6,
+      "topic": "Profit & Loss",
+      "difficulty": "Easy",
+      "question": "A pair of shoes is sold for $80 after a 10% discount. What was the original price?",
+      "options": {
+        "A": "$72",
+        "B": "$85",
+        "C": "$88",
+        "D": "$90"
+      },
+      "correctAnswer": "C",
+      "solution": {
+        "steps": [
+          "Step 1: Let the original price be x.",
+          "Step 2: Selling Price = Original Price - Discount.",
+          "Step 3: Discount = 10% of x = 0.1x.",
+          "Step 4: Selling Price = x - 0.1x = 0.9x.",
+          "Step 5: Set up the equation: 0.9x = $80.",
+          "Step 6: Solve for x: x = $80 ÷ 0.9 = $88.89."
+        ],
+        "finalAnswer": "$88.89",
+        "formula": "Selling Price = Original Price × (1 - Discount Rate)",
+        "tip": "Always set the selling price in relation to the original price minus discount."
+      }
+    },
+    {
+      "id": 7,
+      "topic": "Profit & Loss",
+      "difficulty": "Hard",
+      "question": "A trader bought 3 articles for $300 and sold them for $400 in total. What is his overall profit percentage?",
+      "options": {
+        "A": "25%",
+        "B": "30%",
+        "C": "33.33%",
+        "D": "40%"
+      },
+      "correctAnswer": "C",
+      "solution": {
+        "steps": [
+          "Step 1: Total Cost Price = $300.",
+          "Step 2: Total Selling Price = $400.",
+          "Step 3: Calculate Profit = Selling Price - Cost Price.",
+          "Step 4: Profit = $400 - $300 = $100.",
+          "Step 5: Calculate Profit Percentage = (Profit ÷ Cost Price) × 100.",
+          "Step 6: Profit Percentage = ($100 ÷ $300) × 100 = 33.33%."
+        ],
+        "finalAnswer": "33.33%",
+        "formula": "Profit Percentage = (Profit/Cost Price) × 100",
+        "tip": "Find total profit and total cost to derive overall profit percentage."
+      }
+    },
+    {
+      "id": 8,
+      "topic": "Profit & Loss",
+      "difficulty": "Medium",
+      "question": "If an article is sold for $180 at a profit of 20%, what was the cost price?",
+      "options": {
+        "A": "$150",
+        "B": "$160",
+        "C": "$170",
+        "D": "$175"
+      },
+      "correctAnswer": "B",
+      "solution": {
+        "steps": [
+          "Step 1: Let the cost price be x.",
+          "Step 2: Selling Price = Cost Price + Profit.",
+          "Step 3: Profit = 20% of Cost Price = 0.2x.",
+          "Step 4: Selling Price = x + 0.2x = 1.2x.",
+          "Step 5: Set up the equation: 1.2x = $180.",
+          "Step 6: Solve for x: x = $180 ÷ 1.2 = $150."
+        ],
+        "finalAnswer": "$150",
+        "formula": "Selling Price = Cost Price × (1 + Profit Rate)",
+        "tip": "Remember to relate selling price and cost price through profit percentage."
+      }
+    },
+    {
+      "id": 9,
+      "topic": "Profit & Loss",
+      "difficulty": "Hard",
+      "question": "A retailer marks up an item by 50% and then offers a 20% discount on the marked price. If the cost price is $200, what is the final selling price?",
+      "options": {
+        "A": "$220",
+        "B": "$240",
+        "C": "$250",
+        "D": "$260"
+      },
+      "correctAnswer": "B",
+      "solution": {
+        "steps": [
+          "Step 1: Marked Price = Cost Price + Markup.",
+          "Step 2: Marked Price = $200 + (50% of $200) = $200 + $100 = $300.",
+          "Step 3: Discount = 20% of Marked Price = 0.2 × $300 = $60.",
+          "Step 4: Selling Price = Marked Price - Discount.",
+          "Step 5: Selling Price = $300 - $60 = $240."
+        ],
+        "finalAnswer": "$240",
+        "formula": "Selling Price = Marked Price - Discount | Marked Price = Cost Price × (1 + Markup Rate)",
+        "tip": "Calculate the marked price first before applying any discounts."
+      }
+    },
+    {
+      "id": 10,
+      "topic": "Profit & Loss",
+      "difficulty": "Medium",
+      "question": "A computer is bought for $800 and sold for $960. What is the profit percentage?",
+      "options": {
+        "A": "15%",
+        "B": "20%",
+        "C": "25%",
+        "D": "30%"
+      },
+      "correctAnswer": "B",
+      "solution": {
+        "steps": [
+          "Step 1: Calculate Profit = Selling Price - Cost Price.",
+          "Step 2: Profit = $960 - $800 = $160.",
+          "Step 3: Calculate Profit Percentage = (Profit ÷ Cost Price) × 100.",
+          "Step 4: Profit Percentage = ($160 ÷ $800) × 100 = 20%."
+        ],
+        "finalAnswer": "20%",
+        "formula": "Profit Percentage = (Profit/Cost Price) × 100",
+        "tip": "To find profit percentage, always compare profit with the cost price."
+      }
+    }
+  ],
+  "answers": [
+    {
+      "questionId": 1,
+      "selected": "A"
+    },
+    {
+      "questionId": 2,
+      "selected": "A"
+    },
+    {
+      "questionId": 3,
+      "selected": "A"
+    },
+    {
+      "questionId": 4,
+      "selected": "A"
+    },
+    {
+      "questionId": 5,
+      "selected": "A"
+    },
+    {
+      "questionId": 6,
+      "selected": "B"
+    },
+    {
+      "questionId": 7,
+      "selected": "B"
+    },
+    {
+      "questionId": 8,
+      "selected": "C"
+    },
+    {
+      "questionId": 9,
+      "selected": "C"
+    },
+    {
+      "questionId": 10,
+      "selected": "C"
+    }
+  ],
+  "results": [
+    {
+      "questionId": 1,
+      "question": "A shopkeeper bought a shirt for $40 and sold it for $50. What is the profit percentage?",
+      "topic": "Profit & Loss",
+      "difficulty": "Easy",
+      "options": {
+        "A": "20%",
+        "B": "25%",
+        "C": "30%",
+        "D": "15%"
+      },
+      "selected": "A",
+      "correctAnswer": "B",
+      "isCorrect": false,
+      "solution": {
+        "steps": [
+          "Step 1: Calculate Profit = Selling Price - Cost Price",
+          "Step 2: Profit = $50 - $40 = $10",
+          "Step 3: Calculate Profit Percentage = (Profit ÷ Cost Price) × 100",
+          "Step 4: Profit Percentage = ($10 ÷ $40) × 100 = 25%"
+        ],
+        "finalAnswer": "25%",
+        "formula": "Profit Percentage = (Profit/Cost Price) × 100",
+        "tip": "Profit Percentage helps understand how much you earn compared to your cost."
+      }
+    },
+    {
+      "questionId": 2,
+      "question": "If a book is sold for $120 after a 20% discount, what was its original price?",
+      "topic": "Profit & Loss",
+      "difficulty": "Easy",
+      "options": {
+        "A": "$144",
+        "B": "$150",
+        "C": "$160",
+        "D": "$180"
+      },
+      "selected": "A",
+      "correctAnswer": "A",
+      "isCorrect": true,
+      "solution": {
+        "steps": [
+          "Step 1: Let the original price be x.",
+          "Step 2: Selling Price = Original Price - Discount = x - (20% of x)",
+          "Step 3: Selling Price = x - 0.2x = 0.8x",
+          "Step 4: Set up the equation: 0.8x = $120.",
+          "Step 5: Solve for x: x = $120 ÷ 0.8 = $150."
+        ],
+        "finalAnswer": "$150",
+        "formula": "Selling Price = Original Price - Discount | Discount = (Discount Rate × Original Price)",
+        "tip": "Always calculate the original price using the selling price and discount percentage."
+      }
+    },
+    {
+      "questionId": 3,
+      "question": "A man sells a bicycle at a loss of 10%. If he bought it for $200, what is the selling price?",
+      "topic": "Profit & Loss",
+      "difficulty": "Medium",
+      "options": {
+        "A": "$180",
+        "B": "$190",
+        "C": "$200",
+        "D": "$210"
+      },
+      "selected": "A",
+      "correctAnswer": "A",
+      "isCorrect": true,
+      "solution": {
+        "steps": [
+          "Step 1: Calculate Loss = 10% of Cost Price.",
+          "Step 2: Loss = 10% of $200 = 0.1 × $200 = $20.",
+          "Step 3: Calculate Selling Price = Cost Price - Loss.",
+          "Step 4: Selling Price = $200 - $20 = $180."
+        ],
+        "finalAnswer": "$180",
+        "formula": "Selling Price = Cost Price - Loss | Loss = (Loss Percentage × Cost Price)",
+        "tip": "When selling at a loss, subtract the loss from the cost price to find the selling price."
+      }
+    },
+    {
+      "questionId": 4,
+      "question": "A trader marks a price on an item at $150 and offers a 25% discount. What is the selling price?",
+      "topic": "Profit & Loss",
+      "difficulty": "Medium",
+      "options": {
+        "A": "$112.50",
+        "B": "$120.00",
+        "C": "$125.00",
+        "D": "$130.00"
+      },
+      "selected": "A",
+      "correctAnswer": "A",
+      "isCorrect": true,
+      "solution": {
+        "steps": [
+          "Step 1: Calculate Discount = 25% of Marked Price.",
+          "Step 2: Discount = 0.25 × $150 = $37.50.",
+          "Step 3: Calculate Selling Price = Marked Price - Discount.",
+          "Step 4: Selling Price = $150 - $37.50 = $112.50."
+        ],
+        "finalAnswer": "$112.50",
+        "formula": "Selling Price = Marked Price - Discount | Discount = (Discount Rate × Marked Price)",
+        "tip": "Calculate the discount first before arriving at the selling price."
+      }
+    },
+    {
+      "questionId": 5,
+      "question": "A person marks his goods at a price that gives him a profit of 40% after giving a discount of 20%. If the cost price is $100, what is the marked price?",
+      "topic": "Profit & Loss",
+      "difficulty": "Hard",
+      "options": {
+        "A": "$150",
+        "B": "$160",
+        "C": "$180",
+        "D": "$200"
+      },
+      "selected": "A",
+      "correctAnswer": "B",
+      "isCorrect": false,
+      "solution": {
+        "steps": [
+          "Step 1: Let the marked price be x.",
+          "Step 2: Selling Price = Cost Price + Profit = $100 + 40% of $100 = $140.",
+          "Step 3: Selling Price after discount = Marked Price - Discount.",
+          "Step 4: Selling Price = x - 20% of x = 0.8x.",
+          "Step 5: Set up the equation: 0.8x = $140.",
+          "Step 6: Solve for x: x = $140 ÷ 0.8 = $175."
+        ],
+        "finalAnswer": "$175",
+        "formula": "Selling Price = Marked Price - Discount | Profit = (Profit Percentage × Cost Price)",
+        "tip": "Determine the selling price first before finding the marked price."
+      }
+    },
+    {
+      "questionId": 6,
+      "question": "A pair of shoes is sold for $80 after a 10% discount. What was the original price?",
+      "topic": "Profit & Loss",
+      "difficulty": "Easy",
+      "options": {
+        "A": "$72",
+        "B": "$85",
+        "C": "$88",
+        "D": "$90"
+      },
+      "selected": "B",
+      "correctAnswer": "C",
+      "isCorrect": false,
+      "solution": {
+        "steps": [
+          "Step 1: Let the original price be x.",
+          "Step 2: Selling Price = Original Price - Discount.",
+          "Step 3: Discount = 10% of x = 0.1x.",
+          "Step 4: Selling Price = x - 0.1x = 0.9x.",
+          "Step 5: Set up the equation: 0.9x = $80.",
+          "Step 6: Solve for x: x = $80 ÷ 0.9 = $88.89."
+        ],
+        "finalAnswer": "$88.89",
+        "formula": "Selling Price = Original Price × (1 - Discount Rate)",
+        "tip": "Always set the selling price in relation to the original price minus discount."
+      }
+    },
+    {
+      "questionId": 7,
+      "question": "A trader bought 3 articles for $300 and sold them for $400 in total. What is his overall profit percentage?",
+      "topic": "Profit & Loss",
+      "difficulty": "Hard",
+      "options": {
+        "A": "25%",
+        "B": "30%",
+        "C": "33.33%",
+        "D": "40%"
+      },
+      "selected": "B",
+      "correctAnswer": "C",
+      "isCorrect": false,
+      "solution": {
+        "steps": [
+          "Step 1: Total Cost Price = $300.",
+          "Step 2: Total Selling Price = $400.",
+          "Step 3: Calculate Profit = Selling Price - Cost Price.",
+          "Step 4: Profit = $400 - $300 = $100.",
+          "Step 5: Calculate Profit Percentage = (Profit ÷ Cost Price) × 100.",
+          "Step 6: Profit Percentage = ($100 ÷ $300) × 100 = 33.33%."
+        ],
+        "finalAnswer": "33.33%",
+        "formula": "Profit Percentage = (Profit/Cost Price) × 100",
+        "tip": "Find total profit and total cost to derive overall profit percentage."
+      }
+    },
+    {
+      "questionId": 8,
+      "question": "If an article is sold for $180 at a profit of 20%, what was the cost price?",
+      "topic": "Profit & Loss",
+      "difficulty": "Medium",
+      "options": {
+        "A": "$150",
+        "B": "$160",
+        "C": "$170",
+        "D": "$175"
+      },
+      "selected": "C",
+      "correctAnswer": "B",
+      "isCorrect": false,
+      "solution": {
+        "steps": [
+          "Step 1: Let the cost price be x.",
+          "Step 2: Selling Price = Cost Price + Profit.",
+          "Step 3: Profit = 20% of Cost Price = 0.2x.",
+          "Step 4: Selling Price = x + 0.2x = 1.2x.",
+          "Step 5: Set up the equation: 1.2x = $180.",
+          "Step 6: Solve for x: x = $180 ÷ 1.2 = $150."
+        ],
+        "finalAnswer": "$150",
+        "formula": "Selling Price = Cost Price × (1 + Profit Rate)",
+        "tip": "Remember to relate selling price and cost price through profit percentage."
+      }
+    },
+    {
+      "questionId": 9,
+      "question": "A retailer marks up an item by 50% and then offers a 20% discount on the marked price. If the cost price is $200, what is the final selling price?",
+      "topic": "Profit & Loss",
+      "difficulty": "Hard",
+      "options": {
+        "A": "$220",
+        "B": "$240",
+        "C": "$250",
+        "D": "$260"
+      },
+      "selected": "C",
+      "correctAnswer": "B",
+      "isCorrect": false,
+      "solution": {
+        "steps": [
+          "Step 1: Marked Price = Cost Price + Markup.",
+          "Step 2: Marked Price = $200 + (50% of $200) = $200 + $100 = $300.",
+          "Step 3: Discount = 20% of Marked Price = 0.2 × $300 = $60.",
+          "Step 4: Selling Price = Marked Price - Discount.",
+          "Step 5: Selling Price = $300 - $60 = $240."
+        ],
+        "finalAnswer": "$240",
+        "formula": "Selling Price = Marked Price - Discount | Marked Price = Cost Price × (1 + Markup Rate)",
+        "tip": "Calculate the marked price first before applying any discounts."
+      }
+    },
+    {
+      "questionId": 10,
+      "question": "A computer is bought for $800 and sold for $960. What is the profit percentage?",
+      "topic": "Profit & Loss",
+      "difficulty": "Medium",
+      "options": {
+        "A": "15%",
+        "B": "20%",
+        "C": "25%",
+        "D": "30%"
+      },
+      "selected": "C",
+      "correctAnswer": "B",
+      "isCorrect": false,
+      "solution": {
+        "steps": [
+          "Step 1: Calculate Profit = Selling Price - Cost Price.",
+          "Step 2: Profit = $960 - $800 = $160.",
+          "Step 3: Calculate Profit Percentage = (Profit ÷ Cost Price) × 100.",
+          "Step 4: Profit Percentage = ($160 ÷ $800) × 100 = 20%."
+        ],
+        "finalAnswer": "20%",
+        "formula": "Profit Percentage = (Profit/Cost Price) × 100",
+        "tip": "To find profit percentage, always compare profit with the cost price."
+      }
+    }
+  ],
+  "score": 30,
+  "correctCount": 3,
+  "wrongCount": 7,
+  "timeTaken": 55,
+  "status": "completed",
+  "createdAt": "2026-06-06T05:53:21.595Z",
+  "updatedAt": "2026-06-06T05:54:17.687Z",
+  "__v": 0,
+  "completedAt": "2026-06-06T05:54:17.685Z"
+}

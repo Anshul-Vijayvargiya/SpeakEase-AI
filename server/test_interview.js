@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
-require('dotenv').config();
-const Interview = require('./models/Interview');
+import mongoose from 'mongoose';
+import './env.js';
+import Interview from './models/Interview.js';
 
 async function runTest() {
     try {

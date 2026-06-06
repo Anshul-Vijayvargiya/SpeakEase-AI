@@ -186,18 +186,73 @@ const ReportDashboard = () => {
                   </div>
                 ))}
                 
-                {/* Insights Card */}
-                <div className="md:col-span-3 bg-blue-600/5 border border-blue-500/20 rounded-[2.5rem] p-8 flex items-center gap-8">
-                  <div className="w-16 h-16 bg-blue-600/20 rounded-2xl flex items-center justify-center shrink-0">
-                    <TrendingUp className="w-8 h-8 text-blue-500" />
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-black mb-2">Key Improvement: Eye Contact</h4>
-                    <p className="text-sm text-slate-400 leading-relaxed max-w-2xl">
-                      Our AI detected that you looked away frequently while answering the 3rd question. Maintaining steady eye contact is crucial for establishing trust in HR rounds.
-                    </p>
-                  </div>
-                </div>
+                {/* Insights Card — data-driven */}
+                {(() => {
+                  // Find the weakest behavioral metric to surface as top insight
+                  let insightTitle = 'Keep Practicing!';
+                  let insightBody  = 'Complete an interview session with your camera on to receive personalised behavioral insights.';
+                  let insightColor = 'blue';
+
+                  // Find worst eye contact question
+                  const eyeScores = questions
+                    .map((q, i) => ({ idx: i + 1, score: q.metrics?.eyeContactScore }))
+                    .filter(e => e.score != null && e.score >= 0);
+
+                  const attScores = questions
+                    .map((q, i) => ({ idx: i + 1, score: q.metrics?.attentionScore }))
+                    .filter(e => e.score != null && e.score >= 0);
+
+                  if (eyeScores.length > 0) {
+                    const worst = eyeScores.reduce((a, b) => a.score < b.score ? a : b);
+                    if (worst.score < 50) {
+                      insightTitle = 'Key Improvement: Eye Contact';
+                      insightBody  = `Our AI detected low eye contact (${worst.score}%) during Question ${worst.idx}. Maintaining steady eye contact is crucial for establishing trust.`;
+                      insightColor = 'red';
+                    } else if (totalFillers > 10) {
+                      insightTitle = 'Key Improvement: Reduce Fillers';
+                      insightBody  = `You used ${totalFillers} filler words across the session. Practice pausing instead of saying "um" or "like" — it projects confidence.`;
+                      insightColor = 'amber';
+                    } else if (avgWpm && (avgWpm > 170 || avgWpm < 90)) {
+                      insightTitle = avgWpm > 170 ? 'Slow Down Your Pace' : 'Pick Up the Pace';
+                      insightBody  = `Your average speaking pace was ${avgWpm} WPM. The ideal range is 120–160 WPM for clear communication.`;
+                      insightColor = 'amber';
+                    } else if (attScores.length > 0) {
+                      const worstAtt = attScores.reduce((a, b) => a.score < b.score ? a : b);
+                      if (worstAtt.score < 60) {
+                        insightTitle = 'Key Improvement: Attention Focus';
+                        insightBody  = `Attention dropped to ${worstAtt.score}% during Question ${worstAtt.idx}. Try to face the camera directly and avoid looking around.`;
+                        insightColor = 'orange';
+                      } else {
+                        insightTitle = '✨ Strong Behavioral Performance!';
+                        insightBody  = `Great job! Your eye contact averaged ${avgEyeContact}% and attention averaged ${avgAttention}%. Keep it up in real interviews.`;
+                        insightColor = 'emerald';
+                      }
+                    }
+                  }
+
+                  const colorStyles = {
+                    blue:    { bg: 'rgba(59,130,246,0.05)',  border: 'rgba(59,130,246,0.2)',  icon: '#3B82F6' },
+                    red:     { bg: 'rgba(239,68,68,0.05)',   border: 'rgba(239,68,68,0.2)',   icon: '#EF4444' },
+                    amber:   { bg: 'rgba(245,158,11,0.05)',  border: 'rgba(245,158,11,0.2)',  icon: '#F59E0B' },
+                    orange:  { bg: 'rgba(249,115,22,0.05)',  border: 'rgba(249,115,22,0.2)',  icon: '#F97316' },
+                    emerald: { bg: 'rgba(16,185,129,0.05)',  border: 'rgba(16,185,129,0.2)',  icon: '#10B981' },
+                  };
+                  const cs = colorStyles[insightColor] || colorStyles.blue;
+
+                  return (
+                    <div className="md:col-span-3 rounded-[2.5rem] p-8 flex items-center gap-8" style={{ background: cs.bg, border: `1px solid ${cs.border}` }}>
+                      <div className="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0" style={{ background: `${cs.icon}30` }}>
+                        <TrendingUp className="w-8 h-8" style={{ color: cs.icon }} />
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-black mb-2">{insightTitle}</h4>
+                        <p className="text-sm text-slate-400 leading-relaxed max-w-2xl">
+                          {insightBody}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             </motion.div>
           )}
@@ -466,28 +521,95 @@ const ReportDashboard = () => {
                     </div>
                   </div>
 
-                  {/* AI Feedback Timeline */}
-                  <div className="bg-[#151821] border border-white/5 rounded-[3rem] p-10">
-                    <h4 className="text-xl font-black mb-8">AI Feedback Timeline</h4>
-                    <div className="relative h-2 bg-white/5 rounded-full mb-6">
-                      {[20, 45, 70, 85].map((pos) => (
-                        <div key={pos} className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-red-500 rounded-full border-4 border-[#151821] cursor-pointer hover:scale-125 transition-transform" style={{ left: `${pos}%` }} />
-                      ))}
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {[
-                        { time: '0:42', label: 'Low Eye Contact', color: 'red' },
-                        { time: '1:15', label: 'Filler Loop: "Like"', color: 'amber' },
-                        { time: '2:30', label: 'Pace Too Fast', color: 'orange' },
-                        { time: '3:10', label: 'Strong Delivery', color: 'emerald' },
-                      ].map((item, i) => (
-                        <div key={i} className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                          <p className={`text-[10px] font-black uppercase tracking-widest mb-1 text-${item.color}-500`}>{item.time}</p>
-                          <p className="text-[10px] font-bold text-slate-400">{item.label}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  {/* AI Feedback Timeline — built from real per-question data */}
+                  {(() => {
+                    // Generate timeline events from actual per-question behavioral metrics
+                    const timelineEvents = [];
+                    questions.forEach((q, i) => {
+                      const m = q.metrics || {};
+                      const tag = `Q${i + 1}`;
+
+                      // Low eye contact
+                      if (m.eyeContactScore != null && m.eyeContactScore < 50) {
+                        timelineEvents.push({ tag, label: `Low Eye Contact (${m.eyeContactScore}%)`, color: 'red', severity: 3, pos: ((i + 0.5) / questions.length) * 100 });
+                      }
+                      // Low attention
+                      if (m.attentionScore != null && m.attentionScore < 50) {
+                        timelineEvents.push({ tag, label: `Low Attention (${m.attentionScore}%)`, color: 'orange', severity: 2, pos: ((i + 0.5) / questions.length) * 100 });
+                      }
+                      // High filler count
+                      if (m.fillerCount != null && m.fillerCount > 5) {
+                        timelineEvents.push({ tag, label: `High Fillers (${m.fillerCount})`, color: 'amber', severity: 2, pos: ((i + 0.5) / questions.length) * 100 });
+                      }
+                      // Pace issues
+                      if (m.wpm != null && m.wpm > 0) {
+                        if (m.wpm > 170) {
+                          timelineEvents.push({ tag, label: `Pace Too Fast (${m.wpm} WPM)`, color: 'orange', severity: 1, pos: ((i + 0.5) / questions.length) * 100 });
+                        } else if (m.wpm < 90) {
+                          timelineEvents.push({ tag, label: `Pace Too Slow (${m.wpm} WPM)`, color: 'amber', severity: 1, pos: ((i + 0.5) / questions.length) * 100 });
+                        }
+                      }
+                      // Nervous expression
+                      if (m.behaviorSummary === 'Nervous') {
+                        timelineEvents.push({ tag, label: 'Nervous Expression Detected', color: 'red', severity: 2, pos: ((i + 0.5) / questions.length) * 100 });
+                      }
+                      // Strong delivery
+                      const eye = m.eyeContactScore ?? 0;
+                      const att = m.attentionScore ?? 0;
+                      if (eye >= 75 && att >= 75 && (m.fillerCount ?? 0) <= 2) {
+                        timelineEvents.push({ tag, label: 'Strong Delivery ✓', color: 'emerald', severity: 0, pos: ((i + 0.5) / questions.length) * 100 });
+                      }
+                    });
+
+                    // Colour map for inline styles (Tailwind dynamic classes don't purge well)
+                    const colorMap = {
+                      red:     { dot: '#EF4444', text: '#EF4444', bg: 'rgba(239,68,68,0.08)' },
+                      orange:  { dot: '#F97316', text: '#F97316', bg: 'rgba(249,115,22,0.08)' },
+                      amber:   { dot: '#F59E0B', text: '#F59E0B', bg: 'rgba(245,158,11,0.08)' },
+                      emerald: { dot: '#10B981', text: '#10B981', bg: 'rgba(16,185,129,0.08)' },
+                    };
+
+                    return (
+                      <div className="bg-[#151821] border border-white/5 rounded-[3rem] p-10">
+                        <h4 className="text-xl font-black mb-8">AI Feedback Timeline</h4>
+
+                        {timelineEvents.length > 0 ? (
+                          <>
+                            {/* Progress bar with dots */}
+                            <div className="relative h-2 bg-white/5 rounded-full mb-8">
+                              {timelineEvents.map((ev, idx) => (
+                                <div
+                                  key={idx}
+                                  className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full border-4 border-[#151821] cursor-pointer hover:scale-125 transition-transform"
+                                  style={{ left: `${Math.min(ev.pos, 95)}%`, background: colorMap[ev.color]?.dot || '#3B82F6' }}
+                                  title={`${ev.tag}: ${ev.label}`}
+                                />
+                              ))}
+                            </div>
+
+                            {/* Event cards grid */}
+                            <div className={`grid gap-4 ${timelineEvents.length <= 2 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-2 md:grid-cols-4'}`}>
+                              {timelineEvents.slice(0, 8).map((ev, idx) => {
+                                const c = colorMap[ev.color] || colorMap.amber;
+                                return (
+                                  <div key={idx} className="p-4 rounded-2xl border border-white/5" style={{ background: c.bg }}>
+                                    <p className="text-[10px] font-black uppercase tracking-widest mb-1" style={{ color: c.text }}>{ev.tag}</p>
+                                    <p className="text-[10px] font-bold text-slate-400">{ev.label}</p>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center py-8 text-center gap-3">
+                            <BarChart3 className="w-10 h-10 text-slate-600" />
+                            <p className="text-sm font-bold text-slate-500">No behavioral events recorded for this session.</p>
+                            <p className="text-xs text-slate-600 max-w-md">Events like low eye contact, high filler usage, and pace anomalies are detected automatically during the interview.</p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </>
               ) : (
                 /* Empty state — no recording found */

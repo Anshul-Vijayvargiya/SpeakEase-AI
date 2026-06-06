@@ -18,6 +18,7 @@ import HistoryPage from "./pages/HistoryPage";
 import ProgressPage from "./pages/ProgressPage";
 import ResumeAnalysisPage from "./pages/ResumeAnalysisPage";
 import SettingsPage from "./pages/SettingsPage";
+import AptitudePage from "./pages/AptitudePage";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuthStore();
@@ -63,6 +64,7 @@ function App() {
           <Route path="/history" element={<ProtectedRoute><HistoryPage /></ProtectedRoute>} />
           <Route path="/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />
           <Route path="/resume" element={<ProtectedRoute><ResumeAnalysisPage /></ProtectedRoute>} />
+          <Route path="/aptitude" element={<ProtectedRoute><AptitudePage /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
 
           {/* Fallback */}

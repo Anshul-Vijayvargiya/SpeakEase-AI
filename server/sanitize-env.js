@@ -1,4 +1,4 @@
-const fs = require('fs');
+import fs from 'fs';
 
 const envContent = fs.readFileSync('.env', 'utf-8');
 // Extract the multi-line JSON part

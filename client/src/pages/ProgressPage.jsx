@@ -72,7 +72,21 @@ const ProgressPage = () => {
             <h2 className="text-xl font-black mb-1 flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-amber-400" /> Areas to Improve
             </h2>
-            <p className="text-slate-500 text-sm mb-6">Topics that need more practice</p>
+            <p className="text-slate-500 text-sm mb-4">Topics that need more practice</p>
+
+            {progressData.weakAreas.length > 0 && (
+              <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 mb-6 flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" />
+                <div className="space-y-1">
+                  <h4 className="text-xs font-bold text-amber-300">How is this calculated?</h4>
+                  <p className="text-[11px] text-amber-400/80 leading-relaxed">
+                    These are topics where you scored <strong>below 60%</strong> in individual questions. 
+                    The percentage displays your average score on those questions compared to the <strong>60% passing target</strong>.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {progressData.weakAreas.length === 0 ? (
               <div className="flex flex-col items-center py-10 gap-3 text-slate-500">
                 <CheckCircle2 className="w-10 h-10 text-emerald-500 opacity-50" />
@@ -81,11 +95,30 @@ const ProgressPage = () => {
             ) : (
               <div className="space-y-3">
                 {progressData.weakAreas.map((area, i) => (
-                  <div key={i} className="flex justify-between items-center bg-white/5 p-4 rounded-xl border border-white/5">
-                    <span className="font-bold text-sm">{area.topic}</span>
-                    <span className={`font-black text-sm px-3 py-1 rounded-full ${area.avg < 50 ? 'bg-red-500/10 text-red-400' : 'bg-amber-500/10 text-amber-400'}`}>
-                      {area.avg}% Avg
-                    </span>
+                  <div key={i} className="bg-white/[0.02] hover:bg-white/[0.04] p-4 rounded-2xl border border-white/5 transition-all space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold text-sm text-slate-200">{area.topic}</span>
+                      <span className={`text-xs font-black px-2.5 py-0.5 rounded-full ${
+                        area.avg < 30 
+                          ? 'bg-red-500/10 text-red-400 border border-red-500/20' 
+                          : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                      }`}>
+                        {area.avg}% Avg
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
+                          <motion.div 
+                            className={`h-full rounded-full ${area.avg < 30 ? 'bg-red-500' : 'bg-amber-500'}`}
+                            initial={{ width: 0 }}
+                            animate={{ width: `${area.avg}%` }}
+                            transition={{ delay: i * 0.05, duration: 0.8 }}
+                          />
+                        </div>
+                        <span className="text-[10px] text-slate-500 font-bold shrink-0">Target: 60%+</span>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>

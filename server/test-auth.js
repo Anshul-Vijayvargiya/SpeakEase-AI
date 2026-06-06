@@ -1,5 +1,5 @@
-require('dotenv').config();
-const axios = require('axios');
+import './env.js';
+import axios from 'axios';
 
 axios.post(
   'https://openrouter.ai/api/v1/chat/completions',

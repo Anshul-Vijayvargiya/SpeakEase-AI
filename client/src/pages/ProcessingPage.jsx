@@ -8,14 +8,17 @@ const ProcessingPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [progress, setProgress] = useState(0);
-  const [statusText, setStatusText] = useState('Analysing your interview transcript...');
-
   const steps = [
     { threshold: 25, text: 'Analysing technical accuracy...' },
     { threshold: 50, text: 'Evaluating behavioral responses...' },
     { threshold: 75, text: 'Calculating confidence scores...' },
     { threshold: 90, text: 'Finalizing your performance report...' },
   ];
+
+  const step = steps.find(s => progress <= s.threshold);
+  const statusText = progress >= 100 
+    ? 'Report ready! Redirecting...' 
+    : (step ? step.text : 'Finalizing your performance report...');
 
   useEffect(() => {
     let interval;
@@ -25,7 +28,6 @@ const ProcessingPage = () => {
         const res = await API.get(`/interview/${id}/status`);
         if (res.data.status === 'done' || res.data.status === 'Completed') {
           setProgress(100);
-          setStatusText('Report ready! Redirecting...');
           setTimeout(() => navigate(`/report/${id}`), 1500);
           clearInterval(interval);
         } else {
@@ -45,11 +47,6 @@ const ProcessingPage = () => {
 
     return () => clearInterval(interval);
   }, [id, navigate]);
-
-  useEffect(() => {
-    const step = steps.find(s => progress <= s.threshold);
-    if (step) setStatusText(step.text);
-  }, [progress]);
 
   return (
     <div className="min-h-screen bg-[#0f1117] flex flex-col items-center justify-center p-10 text-white overflow-hidden relative">

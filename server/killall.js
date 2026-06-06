@@ -1,4 +1,4 @@
-const { execSync } = require('child_process');
+import { execSync } from 'child_process';
 ['5000', '5001', '5002', '5003'].forEach(port => {
     try {
         const output = execSync('netstat -ano').toString();

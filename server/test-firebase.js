@@ -1,5 +1,5 @@
-const admin = require('./config/firebaseAdmin');
-const fs = require('fs');
+import admin from './config/firebaseAdmin.js';
+import fs from 'fs';
 
 async function testFirebase() {
     fs.appendFileSync('firebase-test-log.txt', 'Testing Firebase Admin...\n');

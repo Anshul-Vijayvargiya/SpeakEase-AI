@@ -1,7 +1,7 @@
-const fs = require('fs');
+import fs from 'fs';
 
 try {
-    require('./index.js');
+    await import('./index.js');
 } catch (e) {
     fs.writeFileSync('init-error.txt', e.stack || e.toString());
 }

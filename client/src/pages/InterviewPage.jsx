@@ -36,7 +36,7 @@ const InterviewPage = () => {
   const timerRef = useRef(null);
 
   const videoRef = useRef(null);
-  const { eyeContactPercent, expression } = useFaceMesh(videoRef);
+  const { eyeContactPercent, attentionPercent, expression, resetEyeData } = useFaceMesh(videoRef);
   const { transcript, isListening, fillerCount, wpm, startListening, stopListening, resetTranscript } = useAudioAnalyser();
 
   const currentQuestion = questions[currentIndex];
@@ -106,15 +106,37 @@ const InterviewPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, navigate]);
 
-  // 2. Camera & FaceMesh (Simplified for now, will enhance later)
+  // 2. Camera & Recording — HD quality
   useEffect(() => {
     const startMedia = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            width:     { ideal: 1280, min: 640 },
+            height:    { ideal: 720,  min: 480 },
+            frameRate: { ideal: 30,   max: 30  },
+            facingMode: 'user'
+          },
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl:  true,
+            sampleRate: 44100
+          }
+        });
         if (videoRef.current) videoRef.current.srcObject = stream;
         
-        // MediaRecorder setup
-        const recorder = new MediaRecorder(stream);
+        // MediaRecorder — prefer VP9 for better quality at same bitrate
+        const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
+          ? 'video/webm;codecs=vp9,opus'
+          : MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')
+            ? 'video/webm;codecs=vp8,opus'
+            : 'video/webm';
+
+        const recorder = new MediaRecorder(stream, {
+          mimeType,
+          videoBitsPerSecond: 2_500_000  // 2.5 Mbps → crisp 720p
+        });
         mediaRecorderRef.current = recorder;
         
         recorder.ondataavailable = (e) => {
@@ -235,7 +257,7 @@ const InterviewPage = () => {
         userAnswer: finalAnswer,
         behavioralMetrics: { 
           eyeContact: eyeContactPercent, 
-          attention: 100, 
+          attention: attentionPercent, 
           expression: expression,
           fillerCount: fillerCount,
           wpm: wpm
@@ -243,6 +265,7 @@ const InterviewPage = () => {
       });
       
       resetTranscript();
+      resetEyeData();   // fresh eye-contact tracking per question
       nextQuestion();
     } catch (err) {
       toast.error("Failed to submit answer");
