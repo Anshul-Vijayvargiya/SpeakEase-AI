@@ -1,14 +1,8 @@
 import axios from 'axios';
+import { extractJSON } from '../utils/jsonHelper.js';
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY;
 const OPENROUTER_URL    = 'https://openrouter.ai/api/v1/chat/completions';
-
-const cleanJson = (raw) => {
-  let text = raw.trim();
-  if (text.startsWith('```json')) text = text.replace(/^```json\s*/i, '').replace(/\s*```$/, '');
-  else if (text.startsWith('```')) text = text.replace(/^```\s*/i, '').replace(/\s*```$/, '');
-  return text.trim();
-};
 
 const DIFFICULTY_GUIDE = {
   Easy:   'Basic formula application, single-step problems. Very straightforward.',
@@ -97,8 +91,7 @@ const callAI = async (prompt) => {
 };
 
 const parseQuestions = (raw) => {
-  const cleaned = cleanJson(raw);
-  const parsed  = JSON.parse(cleaned);
+  const parsed = extractJSON(raw);
   // Accept bare array or { questions: [...] } wrapper
   const arr = Array.isArray(parsed) ? parsed : (parsed.questions || []);
   if (!Array.isArray(arr) || arr.length === 0) {

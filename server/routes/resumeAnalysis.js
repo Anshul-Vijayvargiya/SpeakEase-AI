@@ -3,12 +3,12 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const pdfParse = require('pdf-parse');
 import { verifyToken } from '../middlewares/authMiddleware.js';
-import axios from 'axios';
+import { client } from '../config/gemini.js';
 import dotenv from 'dotenv';
+import { extractJSON } from '../utils/jsonHelper.js';
 dotenv.config();
 
 const router = express.Router();
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY;
 
 // ─── In-memory score history (keyed by userId) ─────────────────────────────
 // In production you'd persist this in MongoDB
@@ -17,54 +17,23 @@ const scoreHistory = {};
 // ─── Call AI with a strict JSON instruction ───────────────────────────────
 const callGemini = async (prompt, maxTokens = 4000) => {
     try {
-        const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
-            model: 'openai/gpt-4o-mini',
-            messages: [
-                {
-                    role: 'system',
-                    content: 'You are an expert ATS resume analyzer and career counselor specializing in helping engineering students get placed at top tech companies. Always return valid JSON only. Do not include markdown fences or any text outside the JSON.'
-                },
-                { role: 'user', content: prompt }
-            ],
-            response_format: { type: "json_object" },
-            temperature: 0.3
-        }, {
-            headers: {
-                'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-                'Content-Type': 'application/json',
-                'HTTP-Referer': 'http://localhost:5173',
-                'X-Title': 'SpeakEase AI'
-            },
-            timeout: 60000
+        const result = await client.generateContent({
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            systemInstruction: 'You are an ATS parser and resume coach. Return ONLY a valid JSON object. No markdown fences, no extra text.',
+            generationConfig: {
+                maxOutputTokens: maxTokens,
+                temperature: 0.3,
+                responseMimeType: "application/json"
+            }
         });
 
-        const text = response.data.choices[0].message.content.trim();
+        const text = result.response.text().trim();
         console.log(`[AI Service] chars=${text.length}`);
         return text;
     } catch (error) {
-        console.error("[AI Service] Error:", error.response?.data || error.message);
+        console.error("[AI Service] Error:", error.message);
         throw error;
     }
-};
-
-// ─── Robust JSON extractor ────────────────────────────────────────────────────
-const extractJSON = (raw) => {
-  let text = raw
-    .replace(/^```json\s*/i, '')
-    .replace(/^```\s*/i, '')
-    .replace(/\s*```$/, '')
-    .trim();
-
-  try { return JSON.parse(text); } catch (_) {}
-
-  const start = text.indexOf('{');
-  const end   = text.lastIndexOf('}');
-  if (start !== -1 && end > start) {
-    try { return JSON.parse(text.slice(start, end + 1)); } catch (_) {}
-  }
-
-  console.error('[extractJSON] Raw AI response:\n', raw.slice(0, 500));
-  throw new Error('Could not parse JSON from AI response');
 };
 
 // ─── POST /api/resume-analysis/ats ───────────────────────────────────────────

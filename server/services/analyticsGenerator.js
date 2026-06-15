@@ -3,6 +3,7 @@ import Event from '../models/Event.js';
 import Session from '../models/Session.js';
 import Analytics from '../models/Analytics.js';
 import User from '../models/User.js';
+import { extractJSON } from '../utils/jsonHelper.js';
 
 const CLAUDE_MODEL = 'claude-sonnet-4-20250514';
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
@@ -28,16 +29,6 @@ const callClaudeText = async (prompt, temperature = 0.3, maxTokens = 1800) => {
 
   const textBlock = (response.data?.content || []).find((b) => b.type === 'text');
   return (textBlock?.text || '').trim();
-};
-
-const cleanJson = (value) => {
-  let text = String(value || '').trim();
-  if (text.startsWith('```json')) {
-    text = text.replace(/^```json\s*/i, '').replace(/\s*```$/, '');
-  } else if (text.startsWith('```')) {
-    text = text.replace(/^```\s*/i, '').replace(/\s*```$/, '');
-  }
-  return text.trim();
 };
 
 const getFillerBreakdown = (fillerEvents) => {
@@ -105,7 +96,7 @@ Return plain text only.
 `.trim();
 
 const parseQuestionScores = (raw) => {
-  const parsed = JSON.parse(cleanJson(raw));
+  const parsed = extractJSON(raw);
   if (!Array.isArray(parsed)) {
     return [];
   }

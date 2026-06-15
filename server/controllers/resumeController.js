@@ -3,6 +3,7 @@ import User from '../models/User.js';
 import { analyzeResume } from '../services/aiService.js';
 import { generateQuestions } from '../services/questionGenerator.js';
 import { extractText } from '../services/resumeParser.js';
+import { extractJSON } from '../utils/jsonHelper.js';
 
 const performAIParsing = async (resumeText) => {
     const openRouterKey = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY;
@@ -30,7 +31,8 @@ Return strictly valid JSON.`;
     const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
         model: "openai/gpt-4o-mini",
         messages: [{ role: 'user', content: prompt + ' Format as JSON.' }],
-        response_format: { type: "json_object" }
+        response_format: { type: "json_object" },
+        max_tokens: 2000
     }, {
         headers: {
             'Authorization': `Bearer ${openRouterKey}`,
@@ -42,12 +44,7 @@ Return strictly valid JSON.`;
     });
 
     let responseText = response.data.choices[0].message.content.trim();
-    if (responseText.startsWith('```json')) {
-        responseText = responseText.replace(/^```json/, '').replace(/```$/, '').trim();
-    } else if (responseText.startsWith('```')) {
-        responseText = responseText.replace(/^```/, '').replace(/```$/, '').trim();
-    }
-    return JSON.parse(responseText);
+    return extractJSON(responseText);
 };
 
 export const uploadResume = async (req, res) => {

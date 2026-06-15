@@ -8,6 +8,8 @@ import { verifyToken } from '../middlewares/authMiddleware.js';
 import { generateQuestions } from '../services/questionGenerator.js';
 import { parseResume, uploadResume } from '../controllers/resumeController.js';
 
+import { extractJSON } from '../utils/jsonHelper.js';
+
 const router = express.Router();
 
 // New combined routes
@@ -35,9 +37,11 @@ router.post('/generate-questions', verifyToken, upload.single('resume'), async (
     let targetCompanies = [];
     if (targetCompaniesRaw) {
       try {
-        const parsed = JSON.parse(targetCompaniesRaw);
+        const parsed = extractJSON(targetCompaniesRaw);
         if (Array.isArray(parsed)) {
           targetCompanies = parsed;
+        } else {
+          return res.status(400).json({ message: 'targetCompanies must be a JSON array' });
         }
       } catch (err) {
         return res.status(400).json({ message: 'targetCompanies must be a JSON array' });

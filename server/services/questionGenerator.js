@@ -1,14 +1,5 @@
 import axios from 'axios';
-
-const cleanJsonText = (raw) => {
-  let text = raw.trim();
-  if (text.startsWith('```json')) {
-    text = text.replace(/^```json\s*/i, '').replace(/\s*```$/, '');
-  } else if (text.startsWith('```')) {
-    text = text.replace(/^```\s*/i, '').replace(/\s*```$/, '');
-  }
-  return text.trim();
-};
+import { extractJSON } from '../utils/jsonHelper.js';
 
 const buildCompanyInstructions = (targetCompanies = []) => {
   const normalized = targetCompanies.map((c) => String(c).toLowerCase());
@@ -125,7 +116,7 @@ const callOpenRouter = async (prompt) => {
 };
 
 const parseQuestions = (raw) => {
-  const parsed = JSON.parse(cleanJsonText(raw));
+  const parsed = extractJSON(raw);
   const questions = Array.isArray(parsed) ? parsed : (parsed.questions || []);
   if (!Array.isArray(questions)) {
     throw new Error('AI output does not contain a questions array');

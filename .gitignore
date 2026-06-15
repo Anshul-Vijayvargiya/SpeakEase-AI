@@ -4,3 +4,9 @@ dist/
 build/
 .DS_Store
 .git/
+
+# Scratch / temp test files
+server/scratch/
+server/scratch_*.js
+server/test-*.js
+server/get-models.js

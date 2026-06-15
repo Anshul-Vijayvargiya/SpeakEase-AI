@@ -1,5 +1,6 @@
 import { createRequire } from 'module';
 import OpenAI from 'openai';
+import { extractJSON } from '../utils/jsonHelper.js';
 const require = createRequire(import.meta.url);
 
 const openai = new OpenAI({
@@ -130,10 +131,9 @@ export const parseResume = async (filePath, mimetype) => {
   });
 
   const raw   = response.choices[0].message.content;
-  const clean = raw.replace(/```json|```/g, "").trim();
 
   try {
-    return JSON.parse(clean);
+    return extractJSON(raw);
   } catch {
     throw new Error("GPT returned invalid JSON for resume parsing");
   }

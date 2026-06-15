@@ -1,6 +1,7 @@
 // server/controllers/analysisController.js
 import { client } from '../config/gemini.js';
 import Session from '../models/Session.js';
+import { extractJSON } from '../utils/jsonHelper.js';
 
 // 🔹 1. Start Session (Context Setting for MERN)
 export const startSession = async (req, res) => {
@@ -66,22 +67,14 @@ export const analyzeSpeech = async (req, res) => {
 
     // Robust JSON Parsing
     const responseText = result.response.text();
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    let mentorData;
-
-    try {
-      mentorData = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(responseText);
-    } catch (parseError) {
-      console.error("Gemini Parse Error:", responseText);
-      mentorData = {
-        aiReply: "I see. Let's move on. Can you explain your approach to handling application state?",
-        quickFix: "System error: Feedback unavailable.",
-        proVersion: "N/A",
-        techVersion: "N/A",
-        emotionType: "Neutral",
-        emotionScore: 50
-      };
-    }
+    const mentorData = extractJSON(responseText, {
+      aiReply: "I see. Let's move on. Can you explain your approach to handling application state?",
+      quickFix: "System error: Feedback unavailable.",
+      proVersion: "N/A",
+      techVersion: "N/A",
+      emotionType: "Neutral",
+      emotionScore: 50
+    });
 
     session.messages.push({ role: "user", content: transcript }, { role: "assistant", content: mentorData.aiReply });
     await session.save();
@@ -136,22 +129,14 @@ export const finishSession = async (req, res) => {
     });
 
     const responseText = result.response.text();
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    let finalAnalysis;
-
-    try {
-      finalAnalysis = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(responseText);
-    } catch (parseError) {
-      console.error("Gemini Eval Parse Error:", responseText);
-      finalAnalysis = {
-        confidenceScore: "N/A",
-        pace: "N/A",
-        fillerCount: "N/A",
-        overallFeedback: "Failed to parse final feedback.",
-        strengths: "N/A",
-        improvements: "N/A"
-      };
-    }
+    const finalAnalysis = extractJSON(responseText, {
+      confidenceScore: "N/A",
+      pace: "N/A",
+      fillerCount: "N/A",
+      overallFeedback: "Failed to parse final feedback.",
+      strengths: "N/A",
+      improvements: "N/A"
+    });
 
     session.finalAnalysis = finalAnalysis;
     session.status = "completed";

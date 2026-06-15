@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { extractJSON } from '../utils/jsonHelper.js';
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY;
 
@@ -15,7 +16,7 @@ export const generateAllQuestions = async (role, experienceLevel, resumeText, ph
             const jsonStart = resumeText.indexOf('{');
             const jsonEnd = resumeText.lastIndexOf('}');
             const jsonStr = (jsonStart !== -1 && jsonEnd !== -1) ? resumeText.substring(jsonStart, jsonEnd + 1) : resumeText;
-            const parsed = JSON.parse(jsonStr);
+            const parsed = extractJSON(jsonStr);
             resumeSkills = (parsed.skills || parsed.techStack || []).slice(0, 15).join(', ');
             resumeProjects = (parsed.projects || []).slice(0, 4).map(p => p.title || p.name || '').filter(Boolean);
         } else if (resumeText) {
@@ -117,7 +118,8 @@ Return ONLY a valid JSON object with a "questions" key containing an array of 4 
             model: 'openai/gpt-4o-mini',
             messages: [{ role: 'user', content: systemPrompt }],
             response_format: { type: "json_object" },
-            temperature: 0.7
+            temperature: 0.7,
+            max_tokens: 2000
         }, {
             headers: { 
                 'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
@@ -129,10 +131,7 @@ Return ONLY a valid JSON object with a "questions" key containing an array of 4 
         });
 
         let content = response.data.choices[0].message.content.trim();
-        if (content.startsWith('```json')) content = content.replace(/^```json/, '').replace(/```$/, '').trim();
-        else if (content.startsWith('```')) content = content.replace(/^```/, '').replace(/```$/, '').trim();
-        
-        const parsed = JSON.parse(content);
+        const parsed = extractJSON(content);
         const questions = Array.isArray(parsed) ? parsed : (parsed.questions || []);
         
         console.log(`[AI Service] Successfully generated ${questions.length} ${phase} questions`);
@@ -176,7 +175,8 @@ export const getTopicQuestions = async (topic, count = 5, resumeContext = null) 
             model: 'openai/gpt-4o-mini',
             messages: [{ role: 'user', content: systemPrompt }],
             response_format: { type: "json_object" },
-            temperature: 0.8
+            temperature: 0.8,
+            max_tokens: 1500
         }, {
             headers: { 
                 'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
@@ -186,11 +186,7 @@ export const getTopicQuestions = async (topic, count = 5, resumeContext = null) 
         });
 
         let content = response.data.choices[0].message.content.trim();
-        if (content.startsWith('```json')) {
-            content = content.replace(/^```json/, '').replace(/```$/, '').trim();
-        }
-        
-        const parsed = JSON.parse(content);
+        const parsed = extractJSON(content);
         const questions = Array.isArray(parsed) ? parsed : (parsed.questions || []);
         
         // Add IDs to questions
@@ -240,7 +236,8 @@ export const getCompanyQuestions = async (company, role, count = 5) => {
             model: 'openai/gpt-4o-mini',
             messages: [{ role: 'user', content: systemPrompt }],
             response_format: { type: "json_object" },
-            temperature: 0.8
+            temperature: 0.8,
+            max_tokens: 1500
         }, {
             headers: { 
                 'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
@@ -250,11 +247,7 @@ export const getCompanyQuestions = async (company, role, count = 5) => {
         });
 
         let content = response.data.choices[0].message.content.trim();
-        if (content.startsWith('```json')) {
-            content = content.replace(/^```json/, '').replace(/```$/, '').trim();
-        }
-        
-        const parsed = JSON.parse(content);
+        const parsed = extractJSON(content);
         const questions = Array.isArray(parsed) ? parsed : (parsed.questions || []);
         
         return questions.map((q, index) => ({
@@ -301,7 +294,8 @@ export const generatePracticeQuestionsFromAI = async (topic) => {
             model: 'openai/gpt-4o-mini',
             messages: [{ role: 'user', content: systemPrompt }],
             response_format: { type: "json_object" },
-            temperature: 0.7
+            temperature: 0.7,
+            max_tokens: 1000
         }, {
             headers: { 
                 'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
@@ -310,7 +304,7 @@ export const generatePracticeQuestionsFromAI = async (topic) => {
         });
 
         const content = response.data.choices[0].message.content.trim();
-        const parsed = JSON.parse(content);
+        const parsed = extractJSON(content);
         const questions = Array.isArray(parsed) ? parsed : (parsed.questions || []);
         
         return questions.map(q => ({
@@ -381,7 +375,8 @@ export const evaluateUserAnswer = async (questionText, userAnswer, phase) => {
             model: 'openai/gpt-4o-mini',
             messages: [{ role: 'user', content: evaluationPrompt }],
             response_format: { type: "json_object" },
-            temperature: 0.5
+            temperature: 0.5,
+            max_tokens: 1000
         }, {
             headers: { 
                 'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
@@ -391,11 +386,7 @@ export const evaluateUserAnswer = async (questionText, userAnswer, phase) => {
         });
 
         let content = response.data.choices[0].message.content.trim();
-        if (content.startsWith('```json')) {
-            content = content.replace(/^```json/, '').replace(/```$/, '').trim();
-        }
-        
-        const evaluation = JSON.parse(content);
+        const evaluation = extractJSON(content);
         
         const parseScore = (val) => {
             const num = parseInt(val);
@@ -458,7 +449,8 @@ export const evaluatePracticeAnswer = async (question, userAnswer) => {
             model: "google/gemini-2.0-flash-001",
             messages: [{ role: 'user', content: prompt }],
             response_format: { type: "json_object" },
-            temperature: 0.5
+            temperature: 0.5,
+            max_tokens: 1500
         }, {
             headers: { 
                 'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
@@ -467,11 +459,7 @@ export const evaluatePracticeAnswer = async (question, userAnswer) => {
         });
 
         let content = response.data.choices[0].message.content;
-        if (content.startsWith('```json')) {
-            content = content.replace(/^```json/, '').replace(/```$/, '').trim();
-        }
-        
-        return JSON.parse(content);
+        return extractJSON(content);
         
     } catch (error) {
         console.error("[AI Service] Practice Evaluation Error:", error);
@@ -499,7 +487,8 @@ export const generatePracticeHint = async (question) => {
         const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
             model: "google/gemini-2.0-flash-001",
             messages: [{ role: 'user', content: prompt }],
-            temperature: 0.6
+            temperature: 0.6,
+            max_tokens: 300
         }, {
             headers: { 
                 'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
@@ -675,7 +664,8 @@ export const analyzeResume = async (resumeText, targetRole = 'Software Engineer'
             model: 'openai/gpt-4o-mini',
             messages: [{ role: 'user', content: systemPrompt }],
             response_format: { type: "json_object" },
-            temperature: 0.7
+            temperature: 0.7,
+            max_tokens: 2000
         }, {
             headers: { 
                 'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
@@ -688,15 +678,7 @@ export const analyzeResume = async (resumeText, targetRole = 'Software Engineer'
 
         let content = response.data.choices[0].message.content.trim();
         
-        // Robust JSON cleaning
-        const cleanJson = (text) => {
-            let cleaned = text.trim();
-            if (cleaned.startsWith('```json')) cleaned = cleaned.replace(/^```json\s*/i, '').replace(/\s*```$/, '');
-            else if (cleaned.startsWith('```')) cleaned = cleaned.replace(/^```\s*/i, '').replace(/\s*```$/, '');
-            return cleaned.trim();
-        };
-
-        const parsedContent = JSON.parse(cleanJson(content));
+        const parsedContent = extractJSON(content);
         return {
             score: parsedContent.score || 75,
             summary: parsedContent.summary || "Summary unavailable",
