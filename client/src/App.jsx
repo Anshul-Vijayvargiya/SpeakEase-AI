@@ -15,7 +15,7 @@ import ReportDashboard from "./pages/ReportDashboard";
 import PracticeDashboard from "./pages/PracticeDashboard";
 import ProcessingPage from "./pages/ProcessingPage"; // Will be created in Phase 5
 import HistoryPage from "./pages/HistoryPage";
-import ProgressPage from "./pages/ProgressPage";
+import StudyPlanPage from "./pages/StudyPlanPage";
 import ResumeAnalysisPage from "./pages/ResumeAnalysisPage";
 import SettingsPage from "./pages/SettingsPage";
 import AptitudePage from "./pages/AptitudePage";
@@ -62,7 +62,7 @@ function App() {
           <Route path="/report/:id" element={<ProtectedRoute><ReportDashboard /></ProtectedRoute>} />
           <Route path="/practice/:topicId" element={<ProtectedRoute><PracticeDashboard /></ProtectedRoute>} />
           <Route path="/history" element={<ProtectedRoute><HistoryPage /></ProtectedRoute>} />
-          <Route path="/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />
+          <Route path="/study-plan" element={<ProtectedRoute><StudyPlanPage /></ProtectedRoute>} />
           <Route path="/resume" element={<ProtectedRoute><ResumeAnalysisPage /></ProtectedRoute>} />
           <Route path="/aptitude" element={<ProtectedRoute><AptitudePage /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />

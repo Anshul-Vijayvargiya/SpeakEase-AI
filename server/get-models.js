@@ -1,6 +1,12 @@
-require('dotenv').config();
-const axios = require('axios');
-axios.get('https://openrouter.ai/api/v1/models').then(r => {
-  const freeModels = r.data.data.filter(m => m.pricing.prompt === "0" && m.pricing.completion === "0");
-  console.log(freeModels.slice(0, 50).map(m => m.id));
-});
+import axios from 'axios';
+
+async function main() {
+  try {
+    const res = await axios.get('https://openrouter.ai/api/v1/models');
+    const freeModels = res.data.data.filter(m => m.id.includes(':free') || m.id.includes('/free'));
+    console.log('Free Models found:', freeModels.map(m => m.id));
+  } catch (e) {
+    console.error(e.message);
+  }
+}
+main();

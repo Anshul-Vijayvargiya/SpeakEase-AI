@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import API from "./api";
+import API from "../api";
 import { useNavigate } from 'react-router-dom';
 
 const Auth = ({ setUser }) => {
@@ -23,7 +23,7 @@ const Auth = ({ setUser }) => {
 
     const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
     try {
-      const { data } = await axios.post(`http://localhost:5000${endpoint}`, formData);
+      const { data } = await API.post(endpoint, formData);
       localStorage.setItem('userInfo', JSON.stringify(data));
       setUser(data);
       navigate('/');

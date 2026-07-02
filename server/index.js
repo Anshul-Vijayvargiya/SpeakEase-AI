@@ -15,7 +15,7 @@ import reportRoutes from './routes/reportRoutes.js';
 import resumeRoutes from './routes/resume.js';
 import sessionsRoutes from './routes/sessions.js';
 import dashboardRoutes from './routes/dashboard.js';
-import progressRoutes from './routes/progress.js';
+import studyPlanRoutes from './routes/studyPlan.js';
 import resumeAnalysisRoutes from './routes/resumeAnalysis.js';
 import aptitudeRoutes from './routes/aptitude.js';
 import { startPipeline } from './services/pipelineController.js';
@@ -80,7 +80,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/', sessionsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/progress', progressRoutes);
+app.use('/api/study-plan', studyPlanRoutes);
 app.use('/api/resume-analysis', resumeAnalysisRoutes);
 app.use('/api/aptitude', aptitudeRoutes);
 

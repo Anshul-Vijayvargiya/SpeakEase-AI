@@ -2,6 +2,7 @@ import express from 'express';
 import { verifyToken as auth } from '../middlewares/authMiddleware.js';
 import { generateAptitudeQuestions } from '../services/aptitudeGenerator.js';
 import AptitudeSession from '../models/AptitudeSession.js';
+import QuestionBank from '../models/QuestionBank.js';
 import User from '../models/User.js';
 
 const router = express.Router();
@@ -15,7 +16,35 @@ router.post('/generate', auth, async (req, res) => {
       return res.status(400).json({ error: 'Select at least one topic' });
     }
 
-    const questions = await generateAptitudeQuestions(topics, difficulty, Math.min(count, 20));
+    const requestedCount = Math.min(count, 20);
+
+    // Fetch from QuestionBank — INSTANT, no GPT call needed
+    const allQuestions = await QuestionBank.find({
+      topic: { $in: topics },
+      difficulty: difficulty === "Mixed" 
+        ? { $in: ["Easy", "Medium", "Hard"] } 
+        : difficulty,
+    });
+
+    let questions = [];
+
+    if (allQuestions && allQuestions.length > 0) {
+      const pool = allQuestions.flatMap(qb => qb.questions);
+      // Ensure we have enough unique questions, otherwise fallback to live generation or just use what we have
+      if (pool.length > 0) {
+        const shuffled = pool.sort(() => Math.random() - 0.5);
+        questions = shuffled.slice(0, requestedCount);
+        
+        // Re-assign IDs sequentially to match expected format by frontend
+        questions = questions.map((q, idx) => ({ ...q, id: idx + 1 }));
+      }
+    }
+
+    // Fallback to GPT if bank didn't have enough questions (or any at all)
+    if (questions.length < requestedCount) {
+      console.log(`[Aptitude] Cache miss or insufficient questions. Generating live for topics: ${topics.join(', ')}`);
+      questions = await generateAptitudeQuestions(topics, difficulty, requestedCount);
+    }
 
     const uid = req.user?._id || req.user?.id || userId;
 
@@ -28,7 +57,7 @@ router.post('/generate', auth, async (req, res) => {
       status:         'active',
     });
 
-    res.json({ sessionId: session._id, questions });
+    res.json({ sessionId: session._id, questions, isComplete: true });
   } catch (err) {
     console.error('[Aptitude] Generate error:', err.message);
     res.status(500).json({ error: err.message });

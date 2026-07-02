@@ -566,6 +566,15 @@ export const finishInterview = async (req, res) => {
     
     await interview.save();
     
+    // Trigger study plan generation asynchronously
+    import('../services/studyPlanGenerator.js').then(module => {
+      module.generateStudyPlan(interview.userId).catch(err => {
+        console.error('[Interview Controller] Failed to generate study plan:', err);
+      });
+    }).catch(err => {
+      console.error('[Interview Controller] Failed to load studyPlanGenerator:', err);
+    });
+    
     // Generate report URL
     const reportUrl = `/api/reports/generate/${interview._id}`;
     
