@@ -131,22 +131,32 @@ const ResumeUploadPage = () => {
               )}
             </div>
 
-            <button
-              onClick={handleUpload}
-              disabled={!file || isUploading}
-              className="w-full h-16 bg-blue-600 disabled:bg-blue-600/50 text-white font-black rounded-2xl shadow-2xl shadow-blue-600/20 flex items-center justify-center gap-3 transition-all"
-            >
-              {isUploading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Parsing your resume with AI...
-                </>
-              ) : (
-                <>
-                  Upload & Analyse <ArrowRight className="w-5 h-5" />
-                </>
-              )}
-            </button>
+            <div className="flex flex-col gap-4">
+              <button
+                onClick={handleUpload}
+                disabled={!file || isUploading}
+                className="w-full h-16 bg-blue-600 disabled:bg-blue-600/50 text-white font-black rounded-2xl shadow-2xl shadow-blue-600/20 flex items-center justify-center gap-3 transition-all"
+              >
+                {isUploading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Parsing your resume with AI...
+                  </>
+                ) : (
+                  <>
+                    Upload & Analyse <ArrowRight className="w-5 h-5" />
+                  </>
+                )}
+              </button>
+              
+              <button
+                onClick={() => navigate('/setup/check')}
+                disabled={isUploading}
+                className="w-full h-12 text-slate-400 hover:text-white font-bold rounded-xl flex items-center justify-center transition-colors"
+              >
+                Skip for now
+              </button>
+            </div>
           </motion.div>
         ) : (
           <motion.div

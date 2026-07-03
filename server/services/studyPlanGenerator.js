@@ -63,15 +63,23 @@ export async function generateStudyPlan(userId) {
     }
   `;
 
+  const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY;
+
   const response = await axios.post(
-    'https://api.openai.com/v1/chat/completions',
+    'https://openrouter.ai/api/v1/chat/completions',
     {
-      model: 'gpt-4o',
+      model: 'openai/gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
-      response_format: { type: 'json_object' }
+      response_format: { type: 'json_object' },
+      max_tokens: 2000
     },
     {
-      headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` }
+      headers: { 
+        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'http://localhost:5173',
+        'X-Title': 'SpeakEase AI'
+      }
     }
   );
 
