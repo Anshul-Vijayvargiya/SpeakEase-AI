@@ -12,7 +12,7 @@ import toast from 'react-hot-toast';
 
 const ResumeUploadPage = () => {
   const navigate = useNavigate();
-  const { setResumeData, role } = useSessionStore();
+  const { setResumeData, role, interviewType } = useSessionStore();
   
   const [file, setFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -149,13 +149,15 @@ const ResumeUploadPage = () => {
                 )}
               </button>
               
-              <button
-                onClick={() => navigate('/setup/check')}
-                disabled={isUploading}
-                className="w-full h-12 text-slate-400 hover:text-white font-bold rounded-xl flex items-center justify-center transition-colors"
-              >
-                Skip for now
-              </button>
+              {interviewType !== 'hr' && (
+                <button
+                  onClick={() => navigate('/setup/check')}
+                  disabled={isUploading}
+                  className="w-full h-12 text-slate-400 hover:text-white font-bold rounded-xl flex items-center justify-center transition-colors"
+                >
+                  Skip for now
+                </button>
+              )}
             </div>
           </motion.div>
         ) : (
