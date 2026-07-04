@@ -18,6 +18,8 @@ import dashboardRoutes from './routes/dashboard.js';
 import studyPlanRoutes from './routes/studyPlan.js';
 import resumeAnalysisRoutes from './routes/resumeAnalysis.js';
 import aptitudeRoutes from './routes/aptitude.js';
+import codingRoutes from './routes/codingRoutes.js';
+import sqlTestRoutes from './routes/sqlTestRoutes.js';
 import { startPipeline } from './services/pipelineController.js';
 import generateAnalytics from './services/analyticsGenerator.js';
 
@@ -36,7 +38,14 @@ const ALLOWED_ORIGINS = [
 
 const io = new Server(server, {
   cors: {
-    origin: ALLOWED_ORIGINS,
+    origin: (origin, callback) => {
+      if (!origin || ALLOWED_ORIGINS.includes(origin) || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+        callback(null, true);
+      } else {
+        console.warn(`[CORS WS] Rejected origin: ${origin}`);
+        callback(new Error(`Not allowed by CORS: ${origin}`));
+      }
+    },
     credentials: true
   }
 });
@@ -53,10 +62,11 @@ app.use((req, res, next) => {
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+      if (!origin || ALLOWED_ORIGINS.includes(origin) || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
         callback(null, true);
       } else {
-        callback(new Error('Not allowed by CORS'));
+        console.warn(`[CORS HTTP] Rejected origin: ${origin}`);
+        callback(new Error(`Not allowed by CORS: ${origin}`));
       }
     },
     credentials: true
@@ -83,6 +93,8 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/study-plan', studyPlanRoutes);
 app.use('/api/resume-analysis', resumeAnalysisRoutes);
 app.use('/api/aptitude', aptitudeRoutes);
+app.use('/api/coding', codingRoutes);
+app.use('/api/sql-test', sqlTestRoutes);
 
 app.get('/api/test', (req, res) => {
   res.json({ message: 'Server is running!' });

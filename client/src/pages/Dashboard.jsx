@@ -83,7 +83,7 @@ const Dashboard = () => {
         </div>
 
         {/* Start New Interview */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
           {/* Technical Card */}
           <motion.div
             whileHover={{ y: -5 }}
@@ -97,8 +97,8 @@ const Dashboard = () => {
               <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6">
                 <Play className="text-white w-6 h-6 fill-white" />
               </div>
-              <h2 className="text-3xl font-black text-white mb-2">Technical Interview</h2>
-              <p className="text-blue-100 font-medium">Practice coding, system design, and role-specific topics.</p>
+              <h2 className="text-2xl font-black text-white mb-2">Technical Interview</h2>
+              <p className="text-blue-100 font-medium text-sm">Practice system design & conceptual topics.</p>
             </div>
             <div className="relative z-10 flex items-center gap-2 text-white font-bold text-sm">
               Start Now <ChevronRight className="w-4 h-4" />
@@ -123,8 +123,29 @@ const Dashboard = () => {
               <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6">
                 <Play className="text-white w-6 h-6 fill-white" />
               </div>
-              <h2 className="text-3xl font-black text-white mb-2">HR Interview</h2>
-              <p className="text-purple-100 font-medium">Master behavioral questions and cultural fit.</p>
+              <h2 className="text-2xl font-black text-white mb-2">HR Interview</h2>
+              <p className="text-purple-100 font-medium text-sm">Master behavioral questions and cultural fit.</p>
+            </div>
+            <div className="relative z-10 flex items-center gap-2 text-white font-bold text-sm">
+              Start Now <ChevronRight className="w-4 h-4" />
+            </div>
+          </motion.div>
+
+          {/* Coding Card */}
+          <motion.div
+            whileHover={{ y: -5 }}
+            onClick={() => navigate('/setup/coding')}
+            className="group relative h-64 bg-gradient-to-br from-emerald-500 to-teal-700 rounded-[2.5rem] p-10 flex flex-col justify-between overflow-hidden cursor-pointer shadow-2xl shadow-emerald-900/20"
+          >
+            <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:scale-110 transition-transform duration-500">
+              <FileText className="w-40 h-40 text-white fill-white" />
+            </div>
+            <div className="relative z-10">
+              <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6">
+                <Play className="text-white w-6 h-6 fill-white" />
+              </div>
+              <h2 className="text-2xl font-black text-white mb-2">Coding Round</h2>
+              <p className="text-emerald-100 font-medium text-sm">Real IDE, code execution & AI code review.</p>
             </div>
             <div className="relative z-10 flex items-center gap-2 text-white font-bold text-sm">
               Start Now <ChevronRight className="w-4 h-4" />

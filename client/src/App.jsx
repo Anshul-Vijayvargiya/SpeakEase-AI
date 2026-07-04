@@ -19,6 +19,10 @@ import StudyPlanPage from "./pages/StudyPlanPage";
 import ResumeAnalysisPage from "./pages/ResumeAnalysisPage";
 import SettingsPage from "./pages/SettingsPage";
 import AptitudePage from "./pages/AptitudePage";
+import CodingSetupPage from "./pages/CodingSetupPage";
+import CodingInterviewPage from "./pages/CodingInterviewPage";
+import SQLTestSetupPage from "./pages/SQLTestSetupPage";
+import SQLTestPage from "./pages/SQLTestPage";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuthStore();
@@ -66,6 +70,10 @@ function App() {
           <Route path="/resume" element={<ProtectedRoute><ResumeAnalysisPage /></ProtectedRoute>} />
           <Route path="/aptitude" element={<ProtectedRoute><AptitudePage /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+          <Route path="/setup/coding" element={<ProtectedRoute><CodingSetupPage /></ProtectedRoute>} />
+          <Route path="/coding/:id" element={<ProtectedRoute><CodingInterviewPage /></ProtectedRoute>} />
+          <Route path="/sql-setup" element={<ProtectedRoute><SQLTestSetupPage /></ProtectedRoute>} />
+          <Route path="/sql-test/:sessionId" element={<ProtectedRoute><SQLTestPage /></ProtectedRoute>} />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
