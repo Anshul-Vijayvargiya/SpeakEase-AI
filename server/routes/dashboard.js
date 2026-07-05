@@ -58,19 +58,27 @@ function calculateStreak(sessions) {
   if (!sessions.length) return 0;
 
   const dates = [...new Set(
-    sessions.map(s =>
-      new Date(s.createdAt).toDateString()
-    )
+    sessions.map(s => new Date(s.createdAt).toDateString())
   )];
 
-  let streak = 1;
-  const today = new Date().toDateString();
-  if (dates[0] !== today) return 0;
+  const today = new Date();
+  const todayStr = today.toDateString();
+  
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toDateString();
 
+  if (dates[0] !== todayStr && dates[0] !== yesterdayStr) {
+    return 0;
+  }
+
+  let streak = 1;
   for (let i = 1; i < dates.length; i++) {
-    const diff = (new Date(dates[i-1]) - new Date(dates[i])) 
-                 / (1000 * 60 * 60 * 24);
-    if (diff === 1) streak++;
+    const d1 = new Date(dates[i-1]);
+    const d2 = new Date(dates[i]);
+    const diffDays = Math.round((d1 - d2) / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 1) streak++;
     else break;
   }
   return streak;
