@@ -55,12 +55,7 @@ const Dashboard = () => {
             </h1>
             <p className="text-slate-400 font-medium">Ready to master your next interview?</p>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="px-4 py-2 bg-blue-600/10 border border-blue-500/20 rounded-xl text-blue-500 text-sm font-bold flex items-center gap-2">
-              <Zap className="w-4 h-4 fill-blue-500" />
-              12 Credits Left
-            </div>
-          </div>
+
         </div>
 
         {/* Stats Row */}
