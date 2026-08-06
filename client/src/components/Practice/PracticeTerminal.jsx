@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import { useSelector } from 'react-redux';
+import API from '../../api';
 import Editor from '@monaco-editor/react';
+import toast from 'react-hot-toast';
 
 const PracticeTerminal = ({ questions, initialIndex, onBack }) => {
-    const { token } = useSelector(state => state.user);
     const [currentIndex, setCurrentIndex] = useState(initialIndex || 0);
     const [answer, setAnswer] = useState('');
     const [evaluation, setEvaluation] = useState(null);
@@ -17,17 +16,15 @@ const PracticeTerminal = ({ questions, initialIndex, onBack }) => {
     // Coding Playground state
     const isCodingMode = question?.topic?.toLowerCase() === 'dsa' || question?.round?.toLowerCase() === 'coding' || question?.title?.toLowerCase()?.includes('code');
     const [code, setCode] = useState('// Write your solution here\n\nfunction solution() {\n  \n}\n');
-    const [language, setLanguage] = useState(63); // 63 is JS in Judge0
+    const [language, setLanguage] = useState('javascript');
     const [output, setOutput] = useState('');
     const [isRunning, setIsRunning] = useState(false);
 
     const handleGetHint = async () => {
         setLoadingHint(true);
         try {
-            const res = await axios.post('http://localhost:5001/api/interview/practice/hint', {
+            const res = await API.post('/interview/practice/hint', {
                 question: question
-            }, {
-                headers: { 'Authorization': `Bearer ${token}` }
             });
             setHint(res.data.hint);
         } catch (error) {
@@ -46,11 +43,9 @@ const PracticeTerminal = ({ questions, initialIndex, onBack }) => {
         setLoading(true);
         setEvaluation(null);
         try {
-            const res = await axios.post('http://localhost:5001/api/interview/practice/evaluate', {
+            const res = await API.post('/interview/practice/evaluate', {
                 question: question,
                 userAnswer: finalAnswer
-            }, {
-                headers: { 'Authorization': `Bearer ${token}` }
             });
             setEvaluation(res.data);
         } catch (error) {
@@ -87,31 +82,24 @@ const PracticeTerminal = ({ questions, initialIndex, onBack }) => {
         setIsRunning(true);
         setOutput('Running code...');
         try {
-            const base64Code = btoa(unescape(encodeURIComponent(code)));
-            const res = await axios.post('https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=true&wait=true', {
-                language_id: language,
-                source_code: base64Code,
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-RapidAPI-Key': '5b35c05c75mshc7b0f6993a40879p1ce91fjsn6dcce8ff4b09',
-                    'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com'
-                }
+            const res = await API.post('/code/run', {
+                code,
+                language,
             });
 
-            if (res.data.stdout) {
-                setOutput(atob(res.data.stdout));
+            if (res.data.compileError) {
+                setOutput(`Compilation Error: ${res.data.compileError}`);
             } else if (res.data.stderr) {
-                setOutput(`Error: ${atob(res.data.stderr)}`);
-            } else if (res.data.compile_output) {
-                setOutput(`Compilation Error: ${atob(res.data.compile_output)}`);
+                setOutput(`Error: ${res.data.stderr}`);
+            } else if (res.data.stdout) {
+                setOutput(res.data.stdout);
             } else {
-                setOutput(`Status: ${res.data.status?.description || 'Executed successfully'}`);
+                setOutput(`Status: ${res.data.status || 'Executed successfully'}`);
             }
 
         } catch (error) {
             console.error('Code execution failed:', error);
-            setOutput('Simulated output: Execution finished with status 0.');
+            setOutput(error.response?.data?.detail || 'Execution failed');
         } finally {
             setIsRunning(false);
         }
@@ -137,14 +125,14 @@ const PracticeTerminal = ({ questions, initialIndex, onBack }) => {
                     <div className="flex items-center gap-4">
                         <select
                             value={language}
-                            onChange={(e) => setLanguage(Number(e.target.value))}
+                            onChange={(e) => setLanguage(e.target.value)}
                             className="bg-slate-100 text-slate-700 border-none rounded-lg px-4 py-2 text-sm font-semibold cursor-pointer outline-none focus:ring-2 focus:ring-blue-500"
                         >
-                            <option value={63}>JavaScript</option>
-                            <option value={71}>Python 3</option>
-                            <option value={50}>C</option>
-                            <option value={54}>C++</option>
-                            <option value={62}>Java</option>
+                            <option value="javascript">JavaScript</option>
+                            <option value="python">Python 3</option>
+                            <option value="c">C</option>
+                            <option value="cpp">C++</option>
+                            <option value="java">Java</option>
                         </select>
                         <button
                             onClick={handleRunCode}
@@ -218,7 +206,7 @@ const PracticeTerminal = ({ questions, initialIndex, onBack }) => {
                             <Editor
                                 height="100%"
                                 theme="vs-dark"
-                                language={language === 63 ? 'javascript' : language === 71 ? 'python' : 'cpp'}
+                                language={language}
                                 value={code}
                                 onChange={(val) => setCode(val || '')}
                                 options={{ minimap: { enabled: false }, fontSize: 14 }}

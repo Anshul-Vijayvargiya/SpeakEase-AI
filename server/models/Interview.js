@@ -12,6 +12,7 @@ const QuestionSchema = new mongoose.Schema({
         // Shared metrics
         confidence: { type: Number, min: 0, max: 100, default: null },
         feedback: { type: String, default: '' },
+        modelAnswer: { type: String, default: '' },
 
         // Technical specific metrics
         technicalCorrectness: { type: Number, min: 0, max: 100, default: null },
@@ -32,6 +33,7 @@ const QuestionSchema = new mongoose.Schema({
         behaviorSummary: { type: String, default: '' },
         // Speech analytics
         fillerCount: { type: Number, default: 0 },
+        fillerWords: [{ type: String }],
         wpm: { type: Number, default: 0 }
     }
 });
@@ -60,6 +62,7 @@ const InterviewSchema = new mongoose.Schema({
     strengths: [{ type: String }],
     improvements: [{ type: String }],
     videoUrl: { type: String, default: '' },
+    resumeMode: { type: String, enum: ['resume-based', 'generic'], default: 'generic' },
     createdAt: { type: Date, default: Date.now }
 });
 

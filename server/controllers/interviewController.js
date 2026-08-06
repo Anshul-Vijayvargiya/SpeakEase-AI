@@ -27,7 +27,8 @@ export const generateQuestions = async (req, res) => {
       topic = '', 
       language = 'JavaScript',
       difficulty: frontendDifficulty,
-      manualData // For manual entry fallback
+      manualData, // For manual entry fallback
+      skipResume = false
     } = req.body;
 
     const role = (roleRaw || targetRole || 'Software Engineer').trim();
@@ -86,10 +87,15 @@ export const generateQuestions = async (req, res) => {
     }
 
     // If no resume text and no manual data, use stored resume data
-    if (!resumeText && !manualData && user.resumeData) {
+    // — unless the client explicitly signaled this interview should skip resume usage
+    if (!resumeText && !manualData && user.resumeData && !skipResume) {
       resumeText = `Candidate Profile (Stored):\n${JSON.stringify(user.resumeData, null, 2)}`;
       console.log('[Interview Controller] Using stored resume data');
+    } else if (skipResume) {
+      console.log('[Interview Controller] skipResume=true — ignoring stored resume data for this interview');
     }
+
+    const resumeMode = resumeText ? 'resume-based' : 'generic';
 
     // Save target companies to user profile
     if (company) {
@@ -204,6 +210,7 @@ export const generateQuestions = async (req, res) => {
       codingResults,
       technicalResults,
       hrResults,
+      resumeMode,
       status: 'Pending'
     });
 
@@ -487,6 +494,7 @@ export const evaluateAnswer = async (req, res) => {
       attentionScore: behavioralMetrics?.attention || 0,
       behaviorSummary: behavioralMetrics?.expression || 'Focused',
       fillerCount: behavioralMetrics?.fillerCount ?? 0,
+      fillerWords: behavioralMetrics?.fillerWords || [],
       wpm: behavioralMetrics?.wpm ?? 0
     };
 
@@ -565,16 +573,7 @@ export const finishInterview = async (req, res) => {
     }
     
     await interview.save();
-    
-    // Trigger study plan generation asynchronously
-    import('../services/studyPlanGenerator.js').then(module => {
-      module.generateStudyPlan(interview.userId).catch(err => {
-        console.error('[Interview Controller] Failed to generate study plan:', err);
-      });
-    }).catch(err => {
-      console.error('[Interview Controller] Failed to load studyPlanGenerator:', err);
-    });
-    
+
     // Generate report URL
     const reportUrl = `/api/reports/generate/${interview._id}`;
     

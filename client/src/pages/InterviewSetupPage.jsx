@@ -11,7 +11,7 @@ import toast from 'react-hot-toast';
 
 const InterviewSetupPage = () => {
   const navigate = useNavigate();
-  const { role, experienceLevel, resumeData, difficulty, setDifficulty, setSessionId, setQuestions, interviewType } = useSessionStore();
+  const { role, experienceLevel, resumeData, skipResume, difficulty, setDifficulty, setSessionId, setQuestions, interviewType } = useSessionStore();
   
   const videoRef = useRef(null);
   const [checks, setChecks] = useState({
@@ -23,28 +23,32 @@ const InterviewSetupPage = () => {
   const [isStarting, setIsStarting] = useState(false);
 
   useEffect(() => {
-    // 1. Camera Check
-    const testCamera = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        if (videoRef.current) videoRef.current.srcObject = stream;
-        setChecks(prev => ({ ...prev, camera: { status: 'success', label: 'Camera Ready' } }));
-      } catch (err) {
-        setChecks(prev => ({ ...prev, camera: { status: 'error', label: 'Camera Not Found' } }));
-      }
-    };
+    let mediaStream = null;
 
-    // 2. Microphone Check
-    const testMic = async () => {
+    // Camera + Microphone Check — requested together in a single getUserMedia
+    // call. Requesting them as two separate, concurrent calls can make the
+    // browser's camera/mic device negotiation hang indefinitely (neither
+    // resolves nor rejects), which is why the preview stayed black and both
+    // checks spun forever instead of ever reaching success or error.
+    const testCameraAndMic = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        mediaStream = stream;
+        if (videoRef.current) videoRef.current.srcObject = stream;
+
+        setChecks(prev => ({
+          ...prev,
+          camera: { status: 'success', label: 'Camera Ready' },
+          mic: { status: 'success', label: 'Mic Ready' }
+        }));
+
         const audioContext = new AudioContext();
         const analyser = audioContext.createAnalyser();
         const source = audioContext.createMediaStreamSource(stream);
         source.connect(analyser);
         analyser.fftSize = 256;
         const dataArray = new Uint8Array(analyser.frequencyBinCount);
-        
+
         const updateLevel = () => {
           analyser.getByteFrequencyData(dataArray);
           const sum = dataArray.reduce((a, b) => a + b, 0);
@@ -52,13 +56,16 @@ const InterviewSetupPage = () => {
           requestAnimationFrame(updateLevel);
         };
         updateLevel();
-        setChecks(prev => ({ ...prev, mic: { status: 'success', label: 'Mic Ready' } }));
       } catch (err) {
-        setChecks(prev => ({ ...prev, mic: { status: 'error', label: 'Mic Not Found' } }));
+        setChecks(prev => ({
+          ...prev,
+          camera: { status: 'error', label: 'Camera Not Found' },
+          mic: { status: 'error', label: 'Mic Not Found' }
+        }));
       }
     };
 
-    // 3. Internet Check
+    // Internet Check
     const testInternet = async () => {
       try {
         await API.get('/test');
@@ -68,13 +75,12 @@ const InterviewSetupPage = () => {
       }
     };
 
-    testCamera();
-    testMic();
+    testCameraAndMic();
     testInternet();
 
     return () => {
-      if (videoRef.current?.srcObject) {
-        videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
       }
     };
   }, []);
@@ -86,7 +92,8 @@ const InterviewSetupPage = () => {
         targetRole: role?.title,
         experienceLevel: experienceLevel,
         interviewMode: interviewType || 'technical',
-        difficulty: difficulty
+        difficulty: difficulty,
+        skipResume: !!skipResume
       });
 
       if (res.data && (res.data.sessionId || res.data.interviewId)) {

@@ -6,9 +6,9 @@ import {
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell 
 } from 'recharts';
 import { 
-  Trophy, CheckCircle2, AlertCircle, Video, 
+  Trophy, CheckCircle2, AlertCircle, Video,
   Eye, MessageSquare, Zap, Clock, ChevronRight,
-  TrendingUp, BarChart3, ArrowLeft, Download
+  TrendingUp, BarChart3, ArrowLeft, Download, Sparkles
 } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import API from '../api';
@@ -38,14 +38,42 @@ const ReportDashboard = () => {
     </div>
   );
 
-  const overallScore = data.overallScore || 0;
-
   // Aggregate all questions from all phases
   const questions = [
     ...(data.codingResults || []),
     ...(data.technicalResults || []),
     ...(data.hrResults || [])
   ];
+
+  // ── Summary Scores — derived directly from per-question metrics ─────────
+  // data.overallScore/technicalScore/hrPerformance are only computed and
+  // saved once, server-side, when the interview is finished — so they sit at
+  // their default of 0 if that step hasn't run yet. Per-question metrics.*
+  // are populated immediately as each answer is evaluated (the same data the
+  // Detailed Answers tab already reads correctly), so aggregate from there
+  // instead, matching how every other stat on this page (eye contact,
+  // attention, fillers, WPM) is already derived. Fall back to the stored
+  // fields only when there's no per-question data at all yet.
+  const avg = (arr) => arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
+
+  const techScores = questions.map(q => q.metrics?.technicalCorrectness).filter(v => v != null);
+  const commScores = questions.map(q => q.metrics?.communicationSkills).filter(v => v != null);
+  const confScores = questions.map(q => q.metrics?.confidence).filter(v => v != null);
+
+  const technicalAccuracy = techScores.length ? avg(techScores) : (data.technicalScore || 0);
+  const communication = commScores.length ? avg(commScores) : (data.hrPerformance || 0);
+  const confidence = confScores.length ? avg(confScores) : 0;
+
+  let overallScore;
+  if (techScores.length > 0 && commScores.length > 0) {
+    overallScore = Math.round(technicalAccuracy * 0.7 + communication * 0.3);
+  } else if (techScores.length > 0) {
+    overallScore = technicalAccuracy;
+  } else if (commScores.length > 0) {
+    overallScore = communication;
+  } else {
+    overallScore = data.overallScore || 0;
+  }
 
   // ── Real Behavioral Data Derivation ─────────────────────────────────────
   // Build eye-contact chart from actual per-question eyeContactScore
@@ -88,9 +116,9 @@ const ReportDashboard = () => {
     : 0;
 
   const subScores = [
-    { label: 'Technical Accuracy', value: data.technicalScore || 0, color: '#3B82F6' },
-    { label: 'Communication', value: data.hrPerformance || 0, color: '#8B5CF6' },
-    { label: 'Confidence', value: data.overallScore || 0, color: '#10B981' }
+    { label: 'Technical Accuracy', value: technicalAccuracy, color: '#3B82F6' },
+    { label: 'Communication', value: communication, color: '#8B5CF6' },
+    { label: 'Confidence', value: confidence, color: '#10B981' }
   ];
 
   return (
@@ -299,6 +327,12 @@ const ReportDashboard = () => {
                           <TrendingUp className="w-5 h-5 text-emerald-500 shrink-0" />
                           <p className="text-xs text-slate-300 leading-relaxed">
                             <span className="font-bold text-emerald-500">How to improve?</span> {q.metrics?.feedback || "Structure your answer using the STAR method."}
+                          </p>
+                        </div>
+                        <div className="p-4 bg-purple-600/5 rounded-2xl border border-purple-500/10 flex gap-4">
+                          <Sparkles className="w-5 h-5 text-purple-500 shrink-0" />
+                          <p className="text-xs text-slate-300 leading-relaxed">
+                            <span className="font-bold text-purple-500">Model Answer</span> {q.metrics?.modelAnswer || "Model answer unavailable for this question."}
                           </p>
                         </div>
                       </div>

@@ -1,14 +1,16 @@
 import express from 'express';
-import { 
-  generateQuestions, 
-  generatePracticeQuestions, 
-  getNextQuestion, 
-  evaluateAnswer, 
+import {
+  generateQuestions,
+  generatePracticeQuestions,
+  getNextQuestion,
+  evaluateAnswer,
   finishInterview,
   getTopicQuestionsHandler,
   getInterviewHistory,
   getInterview,
-  deleteInterview
+  deleteInterview,
+  evaluatePracticeAnswerHandler,
+  getPracticeHintHandler
 } from '../controllers/interviewController.js';
 import { verifyToken } from '../middlewares/authMiddleware.js';
 import upload from '../middlewares/uploadMiddleware.js';
@@ -33,6 +35,18 @@ router.post(
   '/practice/generate',
   verifyToken,
   generatePracticeQuestions
+);
+
+router.post(
+  '/practice/evaluate',
+  verifyToken,
+  evaluatePracticeAnswerHandler
+);
+
+router.post(
+  '/practice/hint',
+  verifyToken,
+  getPracticeHintHandler
 );
 
 router.get(
@@ -63,7 +77,7 @@ import videoUpload from '../middlewares/videoUploadMiddleware.js';
 
 router.post('/:id/video', verifyToken, videoUpload.single('video'), async (req, res) => {
   try {
-    const interview = await Interview.findById(req.params.id);
+    const interview = await Interview.findOne({ _id: req.params.id, userId: req.user._id });
     if (!interview) return res.status(404).json({ message: 'Interview not found' });
     if (!req.file) return res.status(400).json({ message: 'Video upload failed' });
     
@@ -80,7 +94,7 @@ router.post('/:id/video', verifyToken, videoUpload.single('video'), async (req, 
 
 router.get('/:id/status', verifyToken, async (req, res) => {
   try {
-    const interview = await Interview.findById(req.params.id);
+    const interview = await Interview.findOne({ _id: req.params.id, userId: req.user._id });
     res.json({ status: interview?.status || 'idle' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch status' });

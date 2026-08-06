@@ -151,7 +151,7 @@ router.post('/api/sessions/:id/events', verifyToken, async (req, res) => {
 
 router.get('/api/sessions/history/:userId', auth, async (req, res) => {
   try {
-    const sessions = await Session.find({ userId: req.params.userId })
+    const sessions = await Session.find({ userId: req.user._id })
       .sort({ createdAt: -1 });
     const reports  = await Analytics.find({ sessionId: { $in: sessions.map(s => s._id) } });
 

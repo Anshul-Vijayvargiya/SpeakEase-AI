@@ -18,11 +18,7 @@ const SQLTestSetupPage = () => {
         setError(null);
 
         try {
-            // Note: in a real app, userId should come from context/auth
-            const userId = JSON.parse(localStorage.getItem('user'))?.id || '661858e72750e32b6ba94d91'; // Fallback for dev
-
             const response = await API.post('/sql-test/start', {
-                userId,
                 topic,
                 difficulty
             });

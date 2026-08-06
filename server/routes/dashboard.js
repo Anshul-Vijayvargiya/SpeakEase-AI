@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.get("/:userId", auth, async (req, res) => {
   try {
-    const { userId } = req.params;
+    const userId = req.user._id;
 
     // Fetch all completed interviews for this user
     const completedInterviews = await Interview.find({

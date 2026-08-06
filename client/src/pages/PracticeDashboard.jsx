@@ -137,14 +137,14 @@ const COMPANY_LIST = [
 ];
 
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { useSelector } from 'react-redux';
+import API from '../api';
+import useAuthStore from '../store/authStore';
 import toast from 'react-hot-toast';
 
 const PracticeDashboard = () => {
     const { topicId, questionId } = useParams();
     const navigate = useNavigate();
-    const { token, currentUser } = useSelector(state => state.user);
+    const { user: currentUser } = useAuthStore();
     const [activeMode, setActiveMode] = useState('topics');
     const [dbQuestions, setDbQuestions] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -161,13 +161,11 @@ const PracticeDashboard = () => {
             try {
                 let endpoint = '';
                 if (activeMode === 'topics') {
-                    endpoint = `http://localhost:5001/api/questions/topic/${activeItemData.title}`;
+                    endpoint = `/questions/topic/${activeItemData.title}`;
                 } else {
-                    endpoint = `http://localhost:5001/api/questions/company/${activeItemData.title}`;
+                    endpoint = `/questions/company/${activeItemData.title}`;
                 }
-                const res = await axios.get(endpoint, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                const res = await API.get(endpoint);
                 setDbQuestions(res.data);
             } catch (err) {
                 console.error("Error fetching questions:", err);
@@ -177,7 +175,7 @@ const PracticeDashboard = () => {
             }
         };
         fetchQuestions();
-    }, [activeTopicId, activeMode, activeItemData.title, token]);
+    }, [activeTopicId, activeMode, activeItemData.title]);
 
     const currentTopicData = {
         ...activeItemData,

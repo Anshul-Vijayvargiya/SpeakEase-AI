@@ -4,7 +4,6 @@ import Session from '../models/Session.js';
 import Analytics from '../models/Analytics.js';
 import User from '../models/User.js';
 import { extractJSON } from '../utils/jsonHelper.js';
-import { generateStudyPlan } from './studyPlanGenerator.js';
 const CLAUDE_MODEL = 'claude-sonnet-4-20250514';
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 
@@ -234,9 +233,6 @@ export async function generateAnalytics(sessionId) {
     user.stats.readinessScore = readinessScore;
     user.stats.weakTopic = weakTopic;
     await user.save();
-    
-    // Auto-generate study plan on interview completion
-    await generateStudyPlan(user._id);
   }
 
   return analytics;

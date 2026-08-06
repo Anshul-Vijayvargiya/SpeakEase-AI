@@ -1,21 +1,17 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import { useSelector } from 'react-redux';
+import API from '../../api';
 import QuestionCard from './QuestionCard';
 import { Sparkles, FileQuestion } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const TopicContent = ({ activeTopicData, isCompanyMode, onPractice, onViewAnswer, onGenerate }) => {
-    const { token } = useSelector(state => state.user);
     const [isGenerating, setIsGenerating] = useState(false);
 
     const handleGenerateClick = async () => {
         setIsGenerating(true);
         try {
-            const res = await axios.post(`http://localhost:5001/api/interview/practice/generate`, {
+            const res = await API.post(`/interview/practice/generate`, {
                 topic: activeTopicData.title
-            }, {
-                headers: { 'Authorization': `Bearer ${token}` }
             });
             onGenerate(res.data.questions);
         } catch (error) {

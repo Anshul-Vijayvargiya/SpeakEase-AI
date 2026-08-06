@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { 
-  LayoutDashboard, History, BookOpen, Settings, 
+import {
+  LayoutDashboard, History, Settings,
   LogOut, User as UserIcon, Zap, ChevronRight, FileText, Brain, Database
 } from 'lucide-react';
 import useAuthStore from '../store/authStore';
@@ -15,7 +15,6 @@ const Sidebar = () => {
     { icon: <Brain className="w-5 h-5" />,           label: 'Aptitude Practice', path: '/aptitude'  },
     { icon: <Database className="w-5 h-5" />,        label: 'SQL Practice',      path: '/sql-setup' },
     { icon: <History className="w-5 h-5" />,          label: 'History',           path: '/history'   },
-    { icon: <BookOpen className="w-5 h-5" />,         label: 'Study Plan',        path: '/study-plan'  },
     { icon: <FileText className="w-5 h-5" />,         label: 'Resume',            path: '/resume'    },
     { icon: <Settings className="w-5 h-5" />,         label: 'Settings',          path: '/settings'  },
   ];

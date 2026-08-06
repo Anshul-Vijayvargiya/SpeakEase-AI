@@ -15,6 +15,7 @@ const useSessionStore = create((set, get) => ({
   // Data
   resumeData: null,
   resumeAnalysis: null,
+  skipResume: false,
   questions: [],         // All questions fetched once on mount
   currentIndex: 0,
   
@@ -32,6 +33,7 @@ const useSessionStore = create((set, get) => ({
   setSessionId: (id) => set({ sessionId: id }),
   setResumeData: (data) => set({ resumeData: data }),
   setResumeAnalysis: (analysis) => set({ resumeAnalysis: analysis }),
+  setSkipResume: (skip) => set({ skipResume: skip, resumeData: skip ? null : get().resumeData }),
   setQuestions: (questions, initialIndex = 0) => set({ questions, currentIndex: initialIndex, status: 'active' }),
   
   updateMetrics: (metrics) => set((state) => ({ ...state, ...metrics })),
@@ -59,6 +61,7 @@ const useSessionStore = create((set, get) => ({
     currentRound: 'technical',
     resumeData: null,
     resumeAnalysis: null,
+    skipResume: false,
     questions: [],
     currentIndex: 0,
     eyeContactPercent: 0,

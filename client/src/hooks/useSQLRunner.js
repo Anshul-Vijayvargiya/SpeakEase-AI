@@ -86,22 +86,26 @@ export const useSQLRunner = () => {
 
     const compareResults = (res1, res2) => {
         if (res1.error || res2.error) return false;
-        
-        // Compare columns (order matters for exact match, or we could make it order independent)
+
+        // Compare columns, case-insensitively (e.g. "Total" vs "total" should still match)
         if (res1.columns.length !== res2.columns.length) return false;
-        for (let i = 0; i < res1.columns.length; i++) {
-            if (res1.columns[i] !== res2.columns[i]) return false;
+        const cols1 = res1.columns.map(c => String(c).toLowerCase());
+        const cols2 = res2.columns.map(c => String(c).toLowerCase());
+        for (let i = 0; i < cols1.length; i++) {
+            if (cols1[i] !== cols2[i]) return false;
         }
 
-        // Compare values
+        // Compare values, ignoring row order (a correct query without a matching ORDER BY
+        // can still return rows in a different order and should still be marked correct)
         if (res1.values.length !== res2.values.length) return false;
-        for (let i = 0; i < res1.values.length; i++) {
-            if (res1.values[i].length !== res2.values[i].length) return false;
-            for (let j = 0; j < res1.values[i].length; j++) {
-                if (res1.values[i][j] !== res2.values[i][j]) return false;
-            }
+        const normalizeRows = (rows) =>
+            rows.map(row => JSON.stringify(row.map(v => String(v)))).sort();
+        const rows1 = normalizeRows(res1.values);
+        const rows2 = normalizeRows(res2.values);
+        for (let i = 0; i < rows1.length; i++) {
+            if (rows1[i] !== rows2[i]) return false;
         }
-        
+
         return true;
     };
 

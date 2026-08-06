@@ -28,15 +28,16 @@ export const generateAllQuestions = async (role, experienceLevel, resumeText, ph
         console.log("[AI Service] Resume parsing failed, using raw text context");
     }
 
-    const resumeContext = resumeText 
+    const resumeContext = resumeText
         ? `CANDIDATE RESUME CONTEXT (First 2000 chars):\n${resumeText.substring(0, 2000)}`
         : '';
+    const hasResume = !!resumeContext;
 
     let systemPrompt = '';
     let questionCount = 4;
 
     if (phase === 'technical') {
-        questionCount = 6;
+        questionCount = 8;
         systemPrompt = `You are a senior technical interviewer at a top tech company.
 
 Role: ${role} | Experience: ${experienceLevel} | Language: ${language} | Target Difficulty: ${difficulty}
@@ -44,9 +45,11 @@ ${companyContext}
 ${resumeContext}
 ${resumeSkills ? `Detected Skills: ${resumeSkills}` : ''}
 
-GOAL: Generate exactly 6 technical interview questions.
-DIVERSITY RULE: Do NOT focus on just one technology. If the resume lists multiple skills (e.g., React, Node, SQL), distribute questions across at least 3-4 different areas of their expertise.
-RELEVANCE RULE: Questions must be STRICTLY based on technologies or projects found in their resume.
+GOAL: Generate exactly 8 technical interview questions.
+${hasResume
+    ? `DIVERSITY RULE: Do NOT focus on just one technology. If the resume lists multiple skills (e.g., React, Node, SQL), distribute questions across at least 3-4 different areas of their expertise.
+RELEVANCE RULE: Questions must be STRICTLY based on technologies or projects found in their resume.`
+    : `Generate standard ${role} interview questions for ${experienceLevel} level. Do NOT reference any resume, candidate background, or specific projects — the candidate has not provided one. Cover a healthy mix of core CS fundamentals (DSA, DBMS, OS, CN) and ${role}-relevant technologies.`}
 
 Structure each question object:
 - questionText: CLEAR, CONCISE technical question.
@@ -55,7 +58,7 @@ Structure each question object:
 - topic: Specific area (e.g. "React Hooks", "Database Indexing", "DSA", "DBMS", "OS", "System Design").
 - resumeContext: Short note on why this fits their resume.
 
-Return ONLY a valid JSON object with a "questions" key containing an array of 6 objects:
+Return ONLY a valid JSON object with a "questions" key containing an array of 8 objects:
 {
   "questions": [
     { "questionText": "...", "difficulty": "Beginner|Intermediate|Advanced", "type": "technical", "topic": "...", "resumeContext": "..." }
@@ -74,10 +77,14 @@ ${companyContext}
 ${resumeContext}
 
 GOAL: Generate exactly 8 HR/behavioral questions.
-- Question 1: MUST ask the candidate to walk you through their resume.
+${hasResume
+    ? `- Question 1: MUST ask the candidate to walk you through their resume.
 - Questions 2-5: Standard behavioral (Conflict, Failure, Leadership, Goals, Strengths).
 - Questions 6-8: PROJECT SPECIFIC. Reference specific projects like: ${projectNames}.
-  Example: "In your ${resumeProjects[0] || 'main project'}, what was the biggest trade-off you made?"
+  Example: "In your ${resumeProjects[0] || 'main project'}, what was the biggest trade-off you made?"`
+    : `Generate standard ${role} interview questions for ${experienceLevel} level. Do NOT reference any resume, candidate background, or specific projects — the candidate has not provided one.
+- Question 1: Standard opener (e.g. "Tell me about yourself and why you're interested in this role").
+- Questions 2-8: Standard behavioral competencies (Conflict, Failure, Leadership, Goals, Strengths, Teamwork, Adaptability).`}
 
 Structure each question object:
 - questionText: Behavioral or project-specific question.
@@ -328,18 +335,21 @@ export const evaluateUserAnswer = async (questionText, userAnswer, phase) => {
     Interview Phase: ${phase}
     
     Provide a detailed evaluation with scores from 0-100 for each relevant metric.
-    Be constructive and specific in your feedback.`;
+    Be constructive and specific in your feedback.
+    Also provide a modelAnswer: a concise 2-4 sentence example of what a strong, technically
+    accurate answer to THIS SPECIFIC question would sound like, phrased the way a confident
+    candidate would actually say it out loud (not a bullet list, not third-person description).`;
 
     if (phase === 'hr') {
         evaluationPrompt += `
-        
+
         Evaluate these specific metrics:
         - communicationSkills: How clearly and effectively they communicate
         - clarity: How well-structured and easy to follow their answer is
         - professionalTone: Appropriateness and professionalism
         - emotionalIntelligence: Self-awareness and empathy shown
         - confidence: Level of confidence in delivery
-        
+
         Return ONLY valid JSON with:
         {
           "communicationSkills": 0-100,
@@ -347,18 +357,19 @@ export const evaluateUserAnswer = async (questionText, userAnswer, phase) => {
           "professionalTone": 0-100,
           "emotionalIntelligence": 0-100,
           "confidence": 0-100,
-          "feedback": "Detailed constructive feedback"
+          "feedback": "Detailed constructive feedback",
+          "modelAnswer": "2-4 sentence example of a strong spoken answer to this exact question"
         }`;
     } else {
         evaluationPrompt += `
-        
+
         Evaluate these specific metrics:
         - technicalCorrectness: Accuracy of technical content
         - problemSolving: Approach and methodology
         - technicalDepth: Depth of understanding shown
         - communicationSkills: How well they explain technical concepts
         - confidence: Confidence in delivery
-        
+
         Return ONLY valid JSON with:
         {
           "technicalCorrectness": 0-100,
@@ -366,7 +377,8 @@ export const evaluateUserAnswer = async (questionText, userAnswer, phase) => {
           "technicalDepth": 0-100,
           "communicationSkills": 0-100,
           "confidence": 0-100,
-          "feedback": "Detailed constructive feedback"
+          "feedback": "Detailed constructive feedback",
+          "modelAnswer": "2-4 sentence example of a strong spoken answer to this exact question"
         }`;
     }
 
@@ -401,7 +413,8 @@ export const evaluateUserAnswer = async (questionText, userAnswer, phase) => {
                 professionalTone: parseScore(evaluation.professionalTone),
                 emotionalIntelligence: parseScore(evaluation.emotionalIntelligence),
                 confidence: parseScore(evaluation.confidence),
-                feedback: evaluation.feedback || 'Good attempt! Here are some areas to improve...'
+                feedback: evaluation.feedback || 'Good attempt! Here are some areas to improve...',
+                modelAnswer: evaluation.modelAnswer || ''
             };
         } else {
             return {
@@ -410,7 +423,8 @@ export const evaluateUserAnswer = async (questionText, userAnswer, phase) => {
                 technicalDepth: parseScore(evaluation.technicalDepth),
                 communicationSkills: parseScore(evaluation.communicationSkills),
                 confidence: parseScore(evaluation.confidence),
-                feedback: evaluation.feedback || 'Good attempt! Here are some areas to improve...'
+                feedback: evaluation.feedback || 'Good attempt! Here are some areas to improve...',
+                modelAnswer: evaluation.modelAnswer || ''
             };
         }
 
@@ -617,7 +631,8 @@ function generateFallbackEvaluation(questionText, userAnswer, phase) {
             professionalTone: baseScore + 5,
             emotionalIntelligence: baseScore,
             confidence: baseScore,
-            feedback: `Your answer was ${wordCount > 50 ? 'comprehensive' : 'brief'}. Try to provide specific examples and structure your response clearly.`
+            feedback: `Your answer was ${wordCount > 50 ? 'comprehensive' : 'brief'}. Try to provide specific examples and structure your response clearly.`,
+            modelAnswer: ''
         };
     } else {
         return {
@@ -626,7 +641,8 @@ function generateFallbackEvaluation(questionText, userAnswer, phase) {
             technicalDepth: baseScore - 10,
             communicationSkills: baseScore,
             confidence: baseScore,
-            feedback: `Good attempt! Consider adding more technical details and explaining your thought process.`
+            feedback: `Good attempt! Consider adding more technical details and explaining your thought process.`,
+            modelAnswer: ''
         };
     }
 }

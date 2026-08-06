@@ -2,25 +2,24 @@ import express from 'express';
 import { generateSQLProblem, evaluateSQLAnswer } from '../services/sqlProblemGenerator.js';
 import SQLQuestionBank from '../models/SQLQuestionBank.js';
 import SQLTestSession from '../models/SQLTestSession.js';
+import { verifyToken } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
-// Mock auth middleware for now, or use the existing one if imported
-// Assuming user ID is passed in body for simplicity, but normally from req.user
-// Let's rely on standard practice for this app. We'll extract userId from req.body for now.
+router.use(verifyToken);
 
 // Initialize a session
 router.post('/start', async (req, res) => {
     try {
-        const { userId, topic, difficulty } = req.body;
-        
+        const { topic, difficulty } = req.body;
+
         const session = new SQLTestSession({
-            userId,
+            userId: req.user._id,
             topic,
             difficulty,
             problemsAttempted: []
         });
-        
+
         await session.save();
         res.json(session);
     } catch (error) {
@@ -67,8 +66,8 @@ router.post('/submit', async (req, res) => {
         if (!problem) return res.status(404).json({ error: 'Problem not found' });
 
         const evaluation = await evaluateSQLAnswer(problem, userQuery, isCorrect, executionError);
-        
-        const session = await SQLTestSession.findById(sessionId);
+
+        const session = await SQLTestSession.findOne({ _id: sessionId, userId: req.user._id });
         if (session) {
             session.problemsAttempted.push({
                 questionId,
@@ -91,8 +90,8 @@ router.post('/submit', async (req, res) => {
 router.post('/complete', async (req, res) => {
     try {
         const { sessionId } = req.body;
-        
-        const session = await SQLTestSession.findById(sessionId);
+
+        const session = await SQLTestSession.findOne({ _id: sessionId, userId: req.user._id });
         if (!session) return res.status(404).json({ error: 'Session not found' });
 
         session.status = 'completed';

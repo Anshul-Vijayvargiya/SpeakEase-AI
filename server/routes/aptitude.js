@@ -68,8 +68,9 @@ router.post('/generate', auth, async (req, res) => {
 router.post('/submit', auth, async (req, res) => {
   try {
     const { sessionId, answers = [], timeTaken = 0 } = req.body;
+    const uid = req.user?._id || req.user?.id;
 
-    const session = await AptitudeSession.findById(sessionId);
+    const session = await AptitudeSession.findOne({ _id: sessionId, userId: uid });
     if (!session) return res.status(404).json({ error: 'Session not found' });
 
     const questions = session.questions;

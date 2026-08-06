@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Zap, Brain, Shield, Clock, Award, BarChart3, 
   Video, Mic, Eye, Smile, MessageSquare, CheckCircle2,
-  TrendingUp, Users, Target, Globe, Code, FileText,
+  TrendingUp, Users, Target, Globe, FileText,
   MousePointer2, Sparkles
 } from 'lucide-react';
 
@@ -28,7 +28,6 @@ const LandingPage = () => {
     { icon: <Clock className="w-6 h-6" />, title: "Progress Tracking", desc: "See your growth curve over multiple sessions." },
     { icon: <Users className="w-6 h-6" />, title: "Available 24/7", desc: "Practice anytime, anywhere, without an appointment." },
     { icon: <Shield className="w-6 h-6" />, title: "Save Coaching Fees", desc: "Premium interview prep at a fraction of the cost." },
-    { icon: <Code className="w-6 h-6" />, title: "Coding Round", desc: "Practice live coding with editor and execution." },
     { icon: <CheckCircle2 className="w-6 h-6" />, title: "Reduce Rejections", desc: "Walk into every placement drive fully prepared." },
     { icon: <Globe className="w-6 h-6" />, title: "Multi-Language", desc: "Support for various programming and spoken languages." },
     { icon: <Shield className="w-6 h-6" />, title: "Cheating Detection", desc: "Ensures integrity with distraction and gaze alerts." }

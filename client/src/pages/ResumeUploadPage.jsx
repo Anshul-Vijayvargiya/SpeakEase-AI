@@ -12,7 +12,7 @@ import toast from 'react-hot-toast';
 
 const ResumeUploadPage = () => {
   const navigate = useNavigate();
-  const { setResumeData, role, interviewType } = useSessionStore();
+  const { setResumeData, setSkipResume, role, interviewType } = useSessionStore();
   
   const [file, setFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -68,6 +68,7 @@ const ResumeUploadPage = () => {
         if (res.data.extracted) {
           setParsedPreview(res.data);
           setResumeData(res.data);
+          setSkipResume(false);
           toast.success("Resume parsed successfully!");
         } else {
           toast.error("AI couldn't extract data. Please try another file.");
@@ -151,7 +152,11 @@ const ResumeUploadPage = () => {
               
               {interviewType !== 'hr' && (
                 <button
-                  onClick={() => navigate('/setup/check')}
+                  onClick={() => {
+                    setResumeData(null);
+                    setSkipResume(true);
+                    navigate('/setup/check');
+                  }}
                   disabled={isUploading}
                   className="w-full h-12 text-slate-400 hover:text-white font-bold rounded-xl flex items-center justify-center transition-colors"
                 >
@@ -247,7 +252,7 @@ const ResumeUploadPage = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {parsedPreview.projects.map((p, i) => (
                       <div key={i} className="project-card bg-white/5 rounded-2xl p-4 border border-white/5">
-                        <strong className="text-blue-500">{p.name}</strong>
+                        <strong className="text-blue-500">{p.title || p.name}</strong>
                         <p className="text-sm text-slate-400 my-2">{p.description}</p>
                         <div className="tech-tags flex flex-wrap gap-2 mt-2">
                           {p.technologies?.map(t => (

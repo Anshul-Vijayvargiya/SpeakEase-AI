@@ -24,7 +24,12 @@ const useAudioAnalyser = () => {
   const startListening = useCallback(() => {
     // ALWAYS ask for mic permission first
     navigator.mediaDevices.getUserMedia({ audio: true })
-      .then(() => {
+      .then((permissionStream) => {
+        // This stream was only requested to trigger/verify the mic permission
+        // prompt — SpeechRecognition manages its own capture, so release it
+        // immediately instead of leaving it open for the rest of the session.
+        permissionStream.getTracks().forEach(track => track.stop());
+
         const SpeechRecognition =
           window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -41,7 +46,13 @@ const useAudioAnalyser = () => {
 
         recognition.onstart = () => {
           updateIsListening(true);
-          startTimeRef.current = Date.now();
+          // Only set the baseline on the first start of this answer — onend
+          // auto-restarts recognition on silence gaps, and resetting the
+          // clock on every restart while wordCountRef keeps accumulating
+          // inflates WPM (more words / a much smaller elapsed time).
+          if (startTimeRef.current === null) {
+            startTimeRef.current = Date.now();
+          }
           console.log("Mic started successfully");
         };
 

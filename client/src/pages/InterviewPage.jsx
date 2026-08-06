@@ -37,7 +37,7 @@ const InterviewPage = () => {
 
   const videoRef = useRef(null);
   const { eyeContactPercent, attentionPercent, expression, resetEyeData } = useFaceMesh(videoRef);
-  const { transcript, isListening, fillerCount, wpm, startListening, stopListening, resetTranscript } = useAudioAnalyser();
+  const { transcript, isListening, fillerCount, fillerEvents, wpm, startListening, stopListening, resetTranscript } = useAudioAnalyser();
 
   const currentQuestion = questions[currentIndex];
 
@@ -205,9 +205,10 @@ const InterviewPage = () => {
             const formData = new FormData();
             formData.append('video', blob, 'interview-recording.webm');
 
-            await API.post(`/interview/${id}/video`, formData, {
-              headers: { 'Content-Type': 'multipart/form-data' }
-            }).catch(e => console.error('Video upload failed:', e));
+            await API.post(`/interview/${id}/video`, formData).catch(e => {
+              console.error('Video upload failed:', e);
+              toast.error('Interview recording failed to upload — video playback will be unavailable for this report.');
+            });
           }
 
           await API.post(`/interview/${id}/finish`);
@@ -255,11 +256,12 @@ const InterviewPage = () => {
         interviewId: id,
         questionId: currentQuestion._id,
         userAnswer: finalAnswer,
-        behavioralMetrics: { 
-          eyeContact: eyeContactPercent, 
-          attention: attentionPercent, 
+        behavioralMetrics: {
+          eyeContact: eyeContactPercent,
+          attention: attentionPercent,
           expression: expression,
           fillerCount: fillerCount,
+          fillerWords: fillerEvents.map(e => e.word),
           wpm: wpm
         }
       });

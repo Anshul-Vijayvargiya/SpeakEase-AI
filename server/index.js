@@ -15,11 +15,10 @@ import reportRoutes from './routes/reportRoutes.js';
 import resumeRoutes from './routes/resume.js';
 import sessionsRoutes from './routes/sessions.js';
 import dashboardRoutes from './routes/dashboard.js';
-import studyPlanRoutes from './routes/studyPlan.js';
 import resumeAnalysisRoutes from './routes/resumeAnalysis.js';
 import aptitudeRoutes from './routes/aptitude.js';
-import codingRoutes from './routes/codingRoutes.js';
 import sqlTestRoutes from './routes/sqlTestRoutes.js';
+import codeExecutionRouter from './routes/codeExecution.js';
 import { startPipeline } from './services/pipelineController.js';
 import generateAnalytics from './services/analyticsGenerator.js';
 
@@ -90,11 +89,10 @@ app.use('/api/user', userRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/', sessionsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/study-plan', studyPlanRoutes);
 app.use('/api/resume-analysis', resumeAnalysisRoutes);
 app.use('/api/aptitude', aptitudeRoutes);
-app.use('/api/coding', codingRoutes);
 app.use('/api/sql-test', sqlTestRoutes);
+app.use('/api/code', codeExecutionRouter);
 
 app.get('/api/test', (req, res) => {
   res.json({ message: 'Server is running!' });
