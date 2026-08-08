@@ -5,11 +5,13 @@ import QuestionCard  from '../components/aptitude/QuestionCard';
 import ResultScreen  from '../components/aptitude/ResultScreen';
 import API           from '../api';
 import Sidebar       from '../components/Sidebar';
+import useSidebarStore from '../store/sidebarStore';
 
 // Phase enum
 const PHASE = { SETUP: 'setup', PRACTICE: 'practice', RESULT: 'result' };
 
 const AptitudePage = () => {
+  const { collapsed } = useSidebarStore();
   // ── Session state ──────────────────────────────────────────────────────────
   const [phase,           setPhase]          = useState(PHASE.SETUP);
   const [selectedTopics,  setSelectedTopics] = useState([]);
@@ -153,9 +155,16 @@ const AptitudePage = () => {
   const currentQuestion = questions[currentIdx];
 
   return (
-    <div className="min-h-screen bg-[#0c0e14] flex text-white">
+    <div className="relative min-h-screen bg-[#0c0e14] flex text-white overflow-hidden">
+      {/* Ambient gradient mesh — same visual language as Dashboard.jsx */}
+      <div className="pointer-events-none fixed top-[-8%] right-[8%] w-[42rem] h-[42rem] bg-blue-600/30 rounded-full blur-3xl" />
+      <div className="pointer-events-none fixed top-[6%] left-[32%] w-[36rem] h-[36rem] bg-purple-600/25 rounded-full blur-3xl" />
+      <div className="pointer-events-none fixed bottom-[-15%] left-[15%] w-[32rem] h-[32rem] bg-indigo-600/15 rounded-full blur-3xl" />
+      {/* Extra blob scrolls with the page so topic rows further down still have color to blur against */}
+      <div className="pointer-events-none absolute top-[900px] left-[10%] w-[34rem] h-[34rem] bg-fuchsia-600/15 rounded-full blur-3xl" />
+
       <Sidebar />
-      <main className="flex-1 ml-72 p-10" style={{ paddingBottom: '120px' }}>
+      <main className={`relative z-10 flex-1 p-10 transition-all duration-200 ease-in-out ${collapsed ? 'ml-[72px]' : 'ml-72'}`} style={{ paddingBottom: '120px' }}>
       {/* Error banner */}
       <AnimatePresence>
         {error && (

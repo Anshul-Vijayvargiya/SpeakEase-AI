@@ -13,8 +13,10 @@ import {
 import Sidebar from '../components/Sidebar';
 import API from '../api';
 import toast from 'react-hot-toast';
+import useSidebarStore from '../store/sidebarStore';
 
 const ReportDashboard = () => {
+  const { collapsed } = useSidebarStore();
   const { id } = useParams();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
@@ -125,7 +127,7 @@ const ReportDashboard = () => {
     <div className="min-h-screen bg-[#0c0e14] flex text-white">
       <Sidebar />
       
-      <main className="flex-1 ml-72 p-10 pb-20">
+      <main className={`flex-1 p-10 pb-20 transition-all duration-200 ease-in-out ${collapsed ? 'ml-[72px]' : 'ml-72'}`}>
         {/* Header */}
         <div className="flex items-center justify-between mb-12">
           <div className="flex items-center gap-4">

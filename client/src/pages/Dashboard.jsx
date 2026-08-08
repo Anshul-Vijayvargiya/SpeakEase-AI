@@ -8,10 +8,12 @@ import {
 import Sidebar from '../components/Sidebar';
 import useAuthStore from '../store/authStore';
 import useSessionStore from '../store/sessionStore';
+import useSidebarStore from '../store/sidebarStore';
 import API from '../api';
 
 const Dashboard = () => {
   const { user } = useAuthStore();
+  const { collapsed } = useSidebarStore();
   const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalInterviews: 0,
@@ -39,14 +41,19 @@ const Dashboard = () => {
     { label: 'Total Interviews', value: stats.totalInterviews, icon: <Play className="w-5 h-5" />, color: 'bg-blue-500' },
     { label: 'Avg Score', value: `${stats.avgScore}%`, icon: <BarChart3 className="w-5 h-5" />, color: 'bg-emerald-500' },
     { label: 'Best Score', value: `${stats.bestScore}%`, icon: <Trophy className="w-5 h-5" />, color: 'bg-amber-500' },
-    { label: 'Current Streak', value: `${stats.currentStreak} Days`, icon: <Zap className="w-5 h-5" />, color: 'bg-purple-500' },
+    { label: 'Current Streak', value: `${stats.currentStreak} ${stats.currentStreak === 1 ? 'Day' : 'Days'}`, icon: <Zap className="w-5 h-5" />, color: 'bg-purple-500' },
   ];
 
   return (
-    <div className="min-h-screen bg-[#0c0e14] flex">
+    <div className="relative min-h-screen bg-[#0c0e14] flex overflow-hidden">
+      {/* Ambient gradient mesh — gives the glass panels something colorful to blur against */}
+      <div className="pointer-events-none fixed top-[-8%] right-[8%] w-[42rem] h-[42rem] bg-blue-600/30 rounded-full blur-3xl" />
+      <div className="pointer-events-none fixed top-[6%] left-[32%] w-[36rem] h-[36rem] bg-purple-600/25 rounded-full blur-3xl" />
+      <div className="pointer-events-none fixed bottom-[-15%] left-[15%] w-[32rem] h-[32rem] bg-indigo-600/15 rounded-full blur-3xl" />
+
       <Sidebar />
-      
-      <main className="flex-1 ml-72 p-10">
+
+      <main className={`relative z-10 flex-1 p-10 transition-all duration-200 ease-in-out ${collapsed ? 'ml-[72px]' : 'ml-72'}`}>
         {/* Header */}
         <div className="flex items-center justify-between mb-12">
           <div>
@@ -66,7 +73,7 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="bg-[#151821] border border-white/5 p-6 rounded-[2rem] hover:border-white/10 transition-all"
+              className="bg-white/[0.06] backdrop-blur-lg border border-white/[0.12] p-6 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:bg-white/[0.1] hover:border-white/20 transition-all"
             >
               <div className={`${stat.color}/10 ${stat.color.replace('bg-', 'text-')} w-12 h-12 rounded-2xl flex items-center justify-center mb-4`}>
                 {stat.icon}
@@ -83,7 +90,7 @@ const Dashboard = () => {
           <motion.div
             whileHover={{ y: -5 }}
             onClick={() => navigate('/setup/role?type=technical')}
-            className="group relative h-64 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2.5rem] p-10 flex flex-col justify-between overflow-hidden cursor-pointer shadow-2xl shadow-blue-900/20"
+            className="group relative h-64 bg-gradient-to-br from-blue-600 to-indigo-700 border border-white/[0.12] rounded-[3rem] p-10 flex flex-col justify-between overflow-hidden cursor-pointer shadow-2xl shadow-blue-900/20"
           >
             <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:scale-110 transition-transform duration-500">
               <Zap className="w-40 h-40 text-white fill-white" />
@@ -109,7 +116,7 @@ const Dashboard = () => {
               useSessionStore.getState().setExperienceLevel('Any');
               navigate('/setup/resume');
             }}
-            className="group relative h-64 bg-gradient-to-br from-purple-600 to-pink-700 rounded-[2.5rem] p-10 flex flex-col justify-between overflow-hidden cursor-pointer shadow-2xl shadow-purple-900/20"
+            className="group relative h-64 bg-gradient-to-br from-purple-600 to-pink-700 border border-white/[0.12] rounded-[3rem] p-10 flex flex-col justify-between overflow-hidden cursor-pointer shadow-2xl shadow-purple-900/20"
           >
             <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:scale-110 transition-transform duration-500">
               <MessageSquare className="w-40 h-40 text-white fill-white" />

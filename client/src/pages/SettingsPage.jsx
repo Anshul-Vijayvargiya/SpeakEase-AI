@@ -4,6 +4,7 @@ import Sidebar from '../components/Sidebar';
 import API from '../api';
 import toast from 'react-hot-toast';
 import useAuthStore from '../store/authStore';
+import useSidebarStore from '../store/sidebarStore';
 import {
   User, Mail, School, GraduationCap, Globe, Bell,
   Shield, Trash2, Save, Lock, Zap, Star, ChevronRight,
@@ -106,6 +107,7 @@ const StatChip = ({ label, value, color }) => (
 /* ══════════════════════════════════ PAGE ══════════════════════════════════ */
 const SettingsPage = () => {
   const { user: storeUser, logout } = useAuthStore();
+  const { collapsed } = useSidebarStore();
   const [avatarGrad, setAvatarGrad] = useState(0);
   const [showPw, setShowPw] = useState(false);
   const [showConfirmPw, setShowConfirmPw] = useState(false);
@@ -188,7 +190,7 @@ const SettingsPage = () => {
     <div className="min-h-screen bg-[#09090f] flex text-white">
       <Sidebar />
 
-      <main className="flex-1 ml-72 p-8 max-w-[1100px]">
+      <main className={`flex-1 p-8 max-w-[1100px] transition-all duration-200 ease-in-out ${collapsed ? 'ml-[72px]' : 'ml-72'}`}>
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -12 }}

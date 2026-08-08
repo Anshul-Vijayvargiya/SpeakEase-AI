@@ -11,6 +11,26 @@ import {
   generatePracticeHint 
 } from '../services/aiService.js';
 
+// Abandoned-session policy: Pending/In Progress interviews with no activity
+// for this long are permanently Expired — never resumable, no cron job.
+// Checked lazily wherever an interview is read or written.
+const EXPIRY_WINDOW_MS = 2 * 60 * 60 * 1000; // 2 hours
+
+// Marks `interview` Expired (and saves it) if it's abandoned past the
+// window. Returns true if it just transitioned (or already was) Expired.
+const expireIfAbandoned = async (interview) => {
+  if (interview.status === 'Expired') return true;
+  if (interview.status !== 'Pending' && interview.status !== 'In Progress') return false;
+
+  const lastActivity = interview.lastActivityAt || interview.createdAt;
+  if (Date.now() - new Date(lastActivity).getTime() > EXPIRY_WINDOW_MS) {
+    interview.status = 'Expired';
+    await interview.save();
+    return true;
+  }
+  return false;
+};
+
 // 1. Generate Interview Session (with manual entry support)
 export const generateQuestions = async (req, res) => {
   try {
@@ -348,6 +368,10 @@ export const getNextQuestion = async (req, res) => {
     const interview = await Interview.findOne({ _id: id, userId: req.user._id });
     if (!interview) return res.status(404).json({ error: 'Interview not found' });
 
+    if (await expireIfAbandoned(interview)) {
+      return res.status(410).json({ error: 'This interview session has expired and can no longer be continued.', status: 'Expired' });
+    }
+
     if (interview.status === 'Completed') {
       return res.status(400).json({ error: 'Interview already completed' });
     }
@@ -454,6 +478,10 @@ export const evaluateAnswer = async (req, res) => {
       return res.status(404).json({ error: 'Interview not found' });
     }
 
+    if (await expireIfAbandoned(interview)) {
+      return res.status(410).json({ error: 'This interview session has expired and can no longer be answered.', status: 'Expired' });
+    }
+
     // Find question in all phases
     let question = null;
     let foundPhase = null;
@@ -501,6 +529,7 @@ export const evaluateAnswer = async (req, res) => {
     if (interview.status === 'Pending') {
       interview.status = 'In Progress';
     }
+    interview.lastActivityAt = new Date();
 
     // Only increment index for non-practice interviews
     if (interview.interviewType !== 'practice') {
@@ -530,6 +559,10 @@ export const finishInterview = async (req, res) => {
     const { id } = req.params;
     const interview = await Interview.findOne({ _id: id, userId: req.user._id });
     if (!interview) return res.status(404).json({ error: 'Interview not found' });
+
+    if (await expireIfAbandoned(interview)) {
+      return res.status(410).json({ error: 'This interview session has expired and can no longer be completed.', status: 'Expired' });
+    }
 
     interview.status = 'Completed';
     interview.interviewPhase = 'completed';
@@ -611,8 +644,12 @@ export const getInterviewHistory = async (req, res) => {
   try {
     console.log(`[getInterviewHistory] Fetching history for user: ${req.user._id}`);
     const interviews = await Interview.find({ userId: req.user._id })
-      .select('role experienceLevel status overallScore createdAt interviewType')
+      .select('role experienceLevel status overallScore technicalScore hrPerformance createdAt interviewType technicalResults hrResults codingResults lastActivityAt')
       .sort({ createdAt: -1 });
+
+    // Lazy expiry check: no cron job — abandoned Pending/In Progress sessions
+    // are flipped to a terminal Expired status right here, on read.
+    await Promise.all(interviews.map((iv) => expireIfAbandoned(iv)));
 
     console.log(`[getInterviewHistory] Found ${interviews.length} interviews`);
     res.status(200).json(interviews);

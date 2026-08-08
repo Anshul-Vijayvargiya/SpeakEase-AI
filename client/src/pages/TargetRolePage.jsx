@@ -251,8 +251,16 @@ const TargetRolePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0c0e14] text-white p-6 md:p-12">
-      <div className="max-w-6xl mx-auto">
+    <div className="relative min-h-screen bg-[#0c0e14] text-white p-6 md:p-12 overflow-hidden">
+      {/* Ambient gradient mesh — same visual language as Dashboard.jsx */}
+      <div className="pointer-events-none fixed top-[-8%] right-[8%] w-[42rem] h-[42rem] bg-blue-600/30 rounded-full blur-3xl" />
+      <div className="pointer-events-none fixed top-[6%] left-[32%] w-[36rem] h-[36rem] bg-purple-600/25 rounded-full blur-3xl" />
+      <div className="pointer-events-none fixed bottom-[-15%] left-[15%] w-[32rem] h-[32rem] bg-indigo-600/15 rounded-full blur-3xl" />
+      {/* Extra blobs scroll with the page (not fixed) so the longer role grid keeps glass color further down */}
+      <div className="pointer-events-none absolute top-[750px] left-[8%] w-[34rem] h-[34rem] bg-fuchsia-600/15 rounded-full blur-3xl" />
+      <div className="pointer-events-none absolute top-[1300px] right-[10%] w-[34rem] h-[34rem] bg-cyan-600/15 rounded-full blur-3xl" />
+
+      <div className="relative z-10 max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-12">
           <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-white/5 rounded-full transition-colors">
@@ -267,7 +275,7 @@ const TargetRolePage = () => {
         </div>
 
         {/* Experience Level - moved above roles */}
-        <div className="max-w-2xl mx-auto bg-[#151821] border border-white/5 rounded-[2rem] p-6 mb-8 flex flex-wrap items-center gap-4 justify-between">
+        <div className="max-w-2xl mx-auto bg-white/[0.06] backdrop-blur-lg border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.3)] rounded-[2rem] p-6 mb-8 flex flex-wrap items-center gap-4 justify-between">
           <span className="text-sm font-black text-slate-300">Experience Level:</span>
           <div className="flex flex-wrap gap-3">
             {['Fresher (0-1 yrs)', 'Junior (1-3 yrs)', 'Mid (3-5 yrs)', 'Senior (5+ yrs)'].map((level) => {
@@ -298,7 +306,7 @@ const TargetRolePage = () => {
             placeholder="Search roles (e.g. React Developer)"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-6 outline-none focus:border-blue-500/50 transition-all font-medium"
+            className="w-full bg-white/[0.06] backdrop-blur-lg border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.3)] rounded-2xl py-4 pl-12 pr-6 outline-none focus:border-blue-500/50 transition-all font-medium"
           />
         </div>
 
@@ -318,7 +326,7 @@ const TargetRolePage = () => {
                 whileHover={{ y: -6, scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => handleRoleClick(role)}
-                className="relative p-7 rounded-[2rem] border cursor-pointer transition-all duration-300 overflow-hidden group bg-[#151821] border-white/5 hover:border-white/10 hover:shadow-xl"
+                className="relative p-7 rounded-[2rem] border cursor-pointer transition-all duration-300 overflow-hidden group bg-white/[0.06] backdrop-blur-lg border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:bg-white/[0.1] hover:border-white/20 hover:shadow-xl"
               >
                 {/* Gradient overlay on hover */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${role.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300 rounded-[2rem]`} />

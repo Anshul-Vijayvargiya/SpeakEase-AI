@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '../components/Sidebar';
 import API from '../api';
 import toast from 'react-hot-toast';
+import useSidebarStore from '../store/sidebarStore';
 import {
   Upload, FileText, Loader2, X, ChevronDown, ChevronUp,
   Shield, CheckCircle2, Briefcase, BookOpen, Star, Zap,
@@ -950,13 +951,16 @@ const ResumeAnalysisPanel = () => {
 };
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
-const ResumeAnalysisPage = () => (
-  <div className="min-h-screen bg-[#0c0e14] flex text-white">
-    <Sidebar />
-    <main className="flex-1 ml-72 p-10 space-y-10">
-      <ResumeAnalysisPanel />
-    </main>
-  </div>
-);
+const ResumeAnalysisPage = () => {
+  const { collapsed } = useSidebarStore();
+  return (
+    <div className="min-h-screen bg-[#0c0e14] flex text-white">
+      <Sidebar />
+      <main className={`flex-1 p-10 space-y-10 transition-all duration-200 ease-in-out ${collapsed ? 'ml-[72px]' : 'ml-72'}`}>
+        <ResumeAnalysisPanel />
+      </main>
+    </div>
+  );
+};
 
 export default ResumeAnalysisPage;

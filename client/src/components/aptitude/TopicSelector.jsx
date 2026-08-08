@@ -64,7 +64,7 @@ const TopicSelector = ({ selectedTopics, onTopicToggle, config, onConfigChange, 
       {/* Settings row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Questions count */}
-        <div className="bg-[#151821] rounded-2xl p-5 border border-white/5">
+        <div className="bg-white/[0.06] backdrop-blur-lg rounded-2xl p-5 border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Questions</p>
           <div className="flex gap-2">
             {[5, 10, 15, 20].map((n) => (
@@ -84,7 +84,7 @@ const TopicSelector = ({ selectedTopics, onTopicToggle, config, onConfigChange, 
         </div>
 
         {/* Difficulty */}
-        <div className="bg-[#151821] rounded-2xl p-5 border border-white/5">
+        <div className="bg-white/[0.06] backdrop-blur-lg rounded-2xl p-5 border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Difficulty</p>
           <div className="flex gap-2 flex-wrap">
             {['Easy', 'Medium', 'Hard', 'Mixed'].map((d) => (
@@ -104,7 +104,7 @@ const TopicSelector = ({ selectedTopics, onTopicToggle, config, onConfigChange, 
         </div>
 
         {/* Time per question */}
-        <div className="bg-[#151821] rounded-2xl p-5 border border-white/5">
+        <div className="bg-white/[0.06] backdrop-blur-lg rounded-2xl p-5 border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Time / Question</p>
           <div className="flex gap-2">
             {[{ label: '30s', val: 30 }, { label: '60s', val: 60 }, { label: '90s', val: 90 }, { label: '∞', val: 0 }].map(({ label, val }) => (
@@ -140,7 +140,7 @@ const TopicSelector = ({ selectedTopics, onTopicToggle, config, onConfigChange, 
                   className={`relative p-4 rounded-2xl border text-left transition-all duration-200 ${
                     isSelected
                       ? 'bg-blue-600/20 border-blue-500/60 shadow-lg shadow-blue-600/10'
-                      : 'bg-[#151821] border-white/5 hover:border-white/20 hover:bg-white/5'
+                      : 'bg-white/[0.06] backdrop-blur-lg border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:border-white/20 hover:bg-white/[0.1]'
                   }`}
                 >
                   {isSelected && (
@@ -185,21 +185,23 @@ const TopicSelector = ({ selectedTopics, onTopicToggle, config, onConfigChange, 
           }}
           disabled={totalSelected === 0 || loading}
           style={{
-            padding:        '14px 40px',
-            background:     totalSelected > 0 ? '#2563eb' : 'rgba(255,255,255,0.05)',
-            border:         'none',
-            borderRadius:   16,
-            color:          totalSelected > 0 ? '#fff' : '#64748b',
-            fontWeight:     900,
-            fontSize:       16,
-            cursor:         totalSelected > 0 ? 'pointer' : 'not-allowed',
-            boxShadow:      totalSelected > 0 ? '0 8px 32px rgba(37,99,235,0.4)' : 'none',
-            display:        'flex',
-            alignItems:     'center',
-            gap:            12,
-            minWidth:       220,
-            justifyContent: 'center',
-            transition:     'all 0.2s',
+            padding:              '14px 40px',
+            background:           totalSelected > 0 ? 'rgba(37,99,235,0.85)' : 'rgba(255,255,255,0.06)',
+            backdropFilter:       'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            border:               totalSelected > 0 ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(255,255,255,0.12)',
+            borderRadius:         16,
+            color:                totalSelected > 0 ? '#fff' : '#64748b',
+            fontWeight:           900,
+            fontSize:             16,
+            cursor:               totalSelected > 0 ? 'pointer' : 'not-allowed',
+            boxShadow:            totalSelected > 0 ? '0 8px 32px rgba(37,99,235,0.4)' : '0 8px 32px rgba(0,0,0,0.3)',
+            display:              'flex',
+            alignItems:           'center',
+            gap:                  12,
+            minWidth:             220,
+            justifyContent:       'center',
+            transition:           'all 0.2s',
           }}
         >
           {loading ? (

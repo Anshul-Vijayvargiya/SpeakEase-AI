@@ -3,6 +3,7 @@ import Sidebar from '../components/Sidebar';
 import API from '../api';
 import { useNavigate } from 'react-router-dom';
 import SolutionPanel from '../components/aptitude/SolutionPanel';
+import useSidebarStore from '../store/sidebarStore';
 
 const formatTime = (secs) => {
   const m = Math.floor(secs / 60);
@@ -10,7 +11,52 @@ const formatTime = (secs) => {
   return m > 0 ? `${m}m ${s}s` : `${s}s`;
 };
 
+// Same aggregation logic as ReportDashboard.jsx's Summary tab: the stored
+// overallScore/technicalScore/hrPerformance fields are only computed and
+// saved once, server-side, when the interview is finished — so a session
+// completed by an older code path (or one that never ran that step) can sit
+// at 0 forever even though real per-question metrics exist. Derive it live
+// from technicalResults/hrResults/codingResults instead, falling back to the
+// stored fields only when there's no per-question data at all yet.
+const computeInterviewScore = (item) => {
+  const questions = [
+    ...(item.codingResults || []),
+    ...(item.technicalResults || []),
+    ...(item.hrResults || [])
+  ];
+
+  const avg = (arr) => arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
+
+  const techScores = questions.map(q => q.metrics?.technicalCorrectness).filter(v => v != null);
+  const commScores = questions.map(q => q.metrics?.communicationSkills).filter(v => v != null);
+
+  const technicalAccuracy = techScores.length ? avg(techScores) : (item.technicalScore || 0);
+  const communication = commScores.length ? avg(commScores) : (item.hrPerformance || 0);
+
+  if (techScores.length > 0 && commScores.length > 0) {
+    return Math.round(technicalAccuracy * 0.7 + communication * 0.3);
+  } else if (techScores.length > 0) {
+    return technicalAccuracy;
+  } else if (commScores.length > 0) {
+    return communication;
+  }
+  return item.overallScore || 0;
+};
+
+// Subtext for Expired sessions — how far the candidate got before abandoning.
+const getExpiredProgressLabel = (item) => {
+  const questions = [
+    ...(item.codingResults || []),
+    ...(item.technicalResults || []),
+    ...(item.hrResults || [])
+  ];
+  const total = questions.length;
+  const answered = questions.filter(q => q.userAnswer && q.userAnswer.trim().length > 0).length;
+  return answered === 0 ? 'Never started' : `Left after ${answered} of ${total} questions`;
+};
+
 const HistoryPage = () => {
+  const { collapsed } = useSidebarStore();
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedAptitudeSession, setSelectedAptitudeSession] = useState(null);
@@ -75,8 +121,9 @@ const HistoryPage = () => {
                 type: 'interview',
                 date: item.createdAt,
                 title: item.role || 'Simulation',
-                scoreValue: item.overallScore,
+                scoreValue: computeInterviewScore(item),
                 displayType: item.interviewType || 'simulation',
+                progressLabel: item.status === 'Expired' ? getExpiredProgressLabel(item) : null,
               }))
             : [];
 
@@ -106,12 +153,17 @@ const HistoryPage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0c0e14] flex text-white">
+    <div className="relative min-h-screen bg-[#0c0e14] flex text-white overflow-hidden">
+      {/* Ambient gradient mesh — same visual language as Dashboard.jsx */}
+      <div className="pointer-events-none fixed top-[-8%] right-[8%] w-[42rem] h-[42rem] bg-blue-600/30 rounded-full blur-3xl" />
+      <div className="pointer-events-none fixed top-[6%] left-[32%] w-[36rem] h-[36rem] bg-purple-600/25 rounded-full blur-3xl" />
+      <div className="pointer-events-none fixed bottom-[-15%] left-[15%] w-[32rem] h-[32rem] bg-indigo-600/15 rounded-full blur-3xl" />
+
       <Sidebar />
-      <main className="flex-1 ml-72 p-10">
+      <main className={`relative z-10 flex-1 p-10 transition-all duration-200 ease-in-out ${collapsed ? 'ml-[72px]' : 'ml-72'}`}>
         <h1 className="text-3xl font-black mb-8">Practice & Simulator History</h1>
 
-        <div className="bg-[#151821] border border-white/5 rounded-[2.5rem] p-10">
+        <div className="bg-white/[0.06] backdrop-blur-lg border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.3)] rounded-[2.5rem] p-10">
           {loading ? (
             <div className="py-20 flex flex-col items-center justify-center gap-4">
               <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
@@ -131,7 +183,7 @@ const HistoryPage = () => {
               </thead>
               <tbody className="divide-y divide-white/5">
                 {sessions.map(session => (
-                  <tr key={session._id} className="hover:bg-white/[0.02]">
+                  <tr key={session._id} className="hover:bg-white/[0.03] transition-colors">
                     <td className="py-4 text-sm font-bold text-slate-300">
                       {new Date(session.date).toLocaleDateString()}
                     </td>
@@ -144,12 +196,23 @@ const HistoryPage = () => {
                     <td className="py-4 font-black text-emerald-500">
                       {session.scoreValue !== undefined ? `${session.scoreValue}%` : '0%'}
                     </td>
-                    <td className="py-4 text-xs font-bold text-amber-500 capitalize">{session.status}</td>
+                    <td className="py-4 text-xs font-bold text-amber-500 capitalize">
+                      {session.type === 'interview' && session.status === 'Expired' ? (
+                        <div>
+                          <span className="text-red-400">Expired — not completed</span>
+                          {session.progressLabel && (
+                            <p className="text-slate-500 font-medium normal-case mt-0.5">{session.progressLabel}</p>
+                          )}
+                        </div>
+                      ) : (
+                        session.status
+                      )}
+                    </td>
                     <td className="py-4 text-right flex items-center justify-end gap-2">
                       {session.type === 'interview' && session.status === 'Completed' && (
                         <button
                           onClick={() => navigate(`/report/${session._id}`)}
-                          className="px-4 py-2 bg-white/5 rounded-xl text-xs font-bold hover:bg-white/10 transition-colors"
+                          className="px-4 py-2 bg-white/5 border border-white/[0.12] rounded-xl text-xs font-bold hover:bg-white/10 transition-colors"
                         >
                           View Report
                         </button>
@@ -158,7 +221,7 @@ const HistoryPage = () => {
                         <button
                           onClick={() => handleViewAptitudeDetails(session._id)}
                           disabled={loadingDetails}
-                          className="px-4 py-2 bg-white/5 rounded-xl text-xs font-bold hover:bg-white/10 transition-colors disabled:opacity-50"
+                          className="px-4 py-2 bg-white/5 border border-white/[0.12] rounded-xl text-xs font-bold hover:bg-white/10 transition-colors disabled:opacity-50"
                         >
                           {loadingDetails ? 'Loading...' : 'View Results'}
                         </button>
@@ -171,7 +234,7 @@ const HistoryPage = () => {
                             label: session.type === 'aptitude' ? 'aptitude practice' : 'interview',
                           })
                         }
-                        className="px-4 py-2 bg-red-500/10 text-red-400 rounded-xl text-xs font-bold hover:bg-red-500/20 transition-colors"
+                        className="px-4 py-2 bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl text-xs font-bold hover:bg-red-500/20 transition-colors"
                       >
                         Delete
                       </button>
