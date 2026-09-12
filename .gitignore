@@ -13,3 +13,4 @@ server/get-models.js
 
 # Uploaded interview recordings — user data, not repo content
 server/uploads/
+"server/test-pdf.js" 

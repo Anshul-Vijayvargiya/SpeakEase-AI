@@ -1,9 +1,18 @@
 import express from "express";
 import axios from "axios";
+import rateLimit from "express-rate-limit";
 import { verifyToken } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 const JUDGE0_URL = process.env.JUDGE0_URL || "http://localhost:2358";
+
+const codeLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 20,
+  message: { error: "Too many code execution requests. Please try again in an hour." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const LANGUAGE_IDS = {
   javascript: 63,
@@ -14,7 +23,7 @@ const LANGUAGE_IDS = {
   "c++":      54,
 };
 
-router.post("/run", verifyToken, async (req, res) => {
+router.post("/run", verifyToken, codeLimiter, async (req, res) => {
   try {
     const { code, language, stdin = "" } = req.body;
 

@@ -12,7 +12,7 @@ const ResumeInsights = ({ analysis }) => {
         </div>
     );
 
-    const { score, summary, strengths, improvements, missingKeywords, formattingTips } = analysis;
+    const { score, summary, strengths, improvements, missingKeywords } = analysis;
 
     return (
         <motion.div 

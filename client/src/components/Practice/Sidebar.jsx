@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Layers, Building2 } from 'lucide-react';
 
 const Sidebar = ({ activeTopic, setActiveTopic, topics, activeMode, setActiveMode, companies, targetCompanies }) => {

@@ -1,4 +1,5 @@
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import {
   generateQuestions,
   generatePracticeQuestions,
@@ -19,14 +20,45 @@ import Interview from '../models/Interview.js';
 
 const router = express.Router();
 
+const generateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  message: { error: 'Too many interview requests. Please try again in an hour.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const evaluateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 30,
+  message: { error: 'Too many evaluation requests. Please try again in an hour.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // 🔥 ONLY VALID FUNCTIONS USED
 
 // Fetch user's interview history
 router.get('/history', verifyToken, getInterviewHistory);
 
+// Bulk delete abandoned sessions — must come before any '/:id' routes below,
+// otherwise Express would match "abandoned" as an :id param.
+router.delete('/abandoned', verifyToken, async (req, res) => {
+  try {
+    const result = await Interview.deleteMany({
+      userId: req.user._id,
+      status: { $in: ['Pending', 'In Progress', 'Expired'] }
+    });
+    res.json({ deleted: result.deletedCount });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete abandoned sessions' });
+  }
+});
+
 router.post(
   '/generate',
   verifyToken,
+  generateLimiter,
   upload.single('resume'),
   generateQuestions
 );
@@ -58,6 +90,7 @@ router.get(
 router.post(
   '/evaluate',
   verifyToken,
+  evaluateLimiter,
   evaluateAnswer
 );
 

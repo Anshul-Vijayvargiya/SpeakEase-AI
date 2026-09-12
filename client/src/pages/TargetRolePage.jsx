@@ -10,7 +10,6 @@ import {
 } from 'lucide-react';
 import useSessionStore from '../store/sessionStore';
 import API from '../api';
-import toast from 'react-hot-toast';
 
 const roles = {
   technical: [
@@ -50,12 +49,24 @@ const categoryColors = {
   'System Design': 'text-orange-400 bg-orange-400/10',
 };
 
+// Generic, role-aware fallback used when the live AI preview can't be generated
+// (most commonly: no resume uploaded yet, since role selection happens before
+// resume upload — see TargetRolePage's flow — but also covers a flaky AI call).
+const buildFallbackQuestions = (role, experience) => [
+  { id: 1, category: 'Technical', difficulty: 'Beginner', question: `What draws you to working as a ${role.title}, and which part of the role excites you most?`, type: 'role-specific' },
+  { id: 2, category: 'Technical', difficulty: 'Intermediate', question: `Walk through how you'd approach a typical ${role.title} task at the ${experience} level.`, type: 'role-specific' },
+  { id: 3, category: 'Project Deep-Dive', difficulty: 'Intermediate', question: `Describe a project where you applied skills relevant to ${role.title}.`, type: 'role-specific' },
+  { id: 4, category: 'Technical', difficulty: 'Advanced', question: `What's a challenging problem you'd expect to encounter in this role, and how would you approach it?`, type: 'role-specific' },
+];
+
 const QuestionPreviewModal = ({ role, experience, onClose, onContinue }) => {
   const { resumeData } = useSessionStore();
+  const hasResumeContext = !!(resumeData?.rawText || resumeData?.skills);
   const [questions, setQuestions] = useState([]);
   const [roleSummary, setRoleSummary] = useState('');
   const [keyTopics, setKeyTopics] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isFallback, setIsFallback] = useState(false);
 
   React.useEffect(() => {
     const fetchPreview = async () => {
@@ -65,16 +76,20 @@ const QuestionPreviewModal = ({ role, experience, onClose, onContinue }) => {
           targetRoleId: role.id,
           experienceLevel: experience,
         };
-        if (resumeData?.rawText || resumeData?.skills) {
-          payload.resumeText = resumeData.rawText || 
-            `Skills: ${(resumeData.skills || []).join(', ')}. Projects: ${(resumeData.projects || []).map(p => p.name).join(', ')}. Education: ${(resumeData.education || []).map(e => e.institution).join(', ')}.`;
+        if (hasResumeContext) {
+          payload.resumeText = resumeData.rawText ||
+            `Skills: ${(resumeData.skills || []).join(', ')}. Projects: ${(resumeData.projects || []).map(p => p.title).join(', ')}. Education: ${(resumeData.education || []).map(e => e.institution).join(', ')}.`;
         }
         const res = await API.post('/resume-analysis/questions-preview', payload);
         setQuestions(res.data.questions || []);
         setRoleSummary(res.data.roleSummary || '');
         setKeyTopics(res.data.keyTopics || []);
-      } catch (err) {
-        toast.error('Could not load question preview');
+      } catch {
+        // Live preview failed (most often: no resume context yet, or the AI
+        // call itself is flaky) — fall back to a generic, still-useful
+        // preview instead of leaving the modal empty with just an error toast.
+        setQuestions(buildFallbackQuestions(role, experience));
+        setIsFallback(true);
       } finally {
         setLoading(false);
       }
@@ -139,11 +154,19 @@ const QuestionPreviewModal = ({ role, experience, onClose, onContinue }) => {
               </div>
               <div className="text-center">
                 <p className="font-bold text-white">Generating Questions</p>
-                <p className="text-sm text-slate-400 mt-1">AI is crafting role-specific + resume-based questions…</p>
+                <p className="text-sm text-slate-400 mt-1">
+                  {hasResumeContext ? 'AI is crafting role-specific + resume-based questions…' : 'AI is crafting role-specific questions…'}
+                </p>
               </div>
             </div>
           ) : (
             <>
+              {isFallback && (
+                <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 mb-6 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+                  <p className="text-sm text-amber-200">Showing standard preview questions for this role — live AI preview is temporarily unavailable.</p>
+                </div>
+              )}
               {roleSummary && (
                 <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 mb-6">
                   <div className="flex items-center gap-2 mb-2">
@@ -216,7 +239,8 @@ const TargetRolePage = () => {
   const [searchParams] = useSearchParams();
   const type = searchParams.get('type') || 'technical';
   const navigate = useNavigate();
-  const { setRole, setExperienceLevel, setInterviewType } = useSessionStore();
+  const { setRole, setExperienceLevel, setInterviewType, skipResume, resumeData } = useSessionStore();
+  const hasResumeContext = !!(resumeData?.rawText || resumeData?.skills);
 
   const [search, setSearch] = useState('');
   const [selectedRole, setSelectedRole] = useState(null);
@@ -228,9 +252,9 @@ const TargetRolePage = () => {
       setInterviewType('hr');
       setRole({ title: 'Candidate', id: 'candidate', topics: [] });
       setExperienceLevel('Any');
-      navigate('/setup/resume');
+      navigate(skipResume ? '/setup/check' : '/setup/resume');
     }
-  }, [type, navigate, setRole, setExperienceLevel, setInterviewType]);
+  }, [type, navigate, setRole, setExperienceLevel, setInterviewType, skipResume]);
 
   const allRoles = [...roles.technical, ...roles.nontechnical];
   const filteredRoles = allRoles.filter(role =>
@@ -247,7 +271,7 @@ const TargetRolePage = () => {
 
   const handleContinue = () => {
     setShowModal(false);
-    navigate('/setup/resume');
+    navigate(skipResume ? '/setup/check' : '/setup/resume');
   };
 
   return (
@@ -313,7 +337,13 @@ const TargetRolePage = () => {
         {/* Click hint banner */}
         <div className="flex items-center gap-3 justify-center mb-8 text-sm text-slate-400">
           <Zap className="w-4 h-4 text-blue-400 fill-blue-400" />
-          <span>Click any role card to see AI-generated questions <span className="text-blue-400 font-bold">tailored to that role + your resume</span></span>
+          <span>
+            {hasResumeContext ? (
+              <>Click any role card to see AI-generated questions <span className="text-blue-400 font-bold">tailored to that role + your resume</span></>
+            ) : (
+              <>Click any role card to <span className="text-blue-400 font-bold">preview standard questions</span> for that role — resume personalization kicks in after you upload one</>
+            )}
+          </span>
         </div>
 
         {/* Roles Grid */}

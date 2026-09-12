@@ -144,11 +144,16 @@ export const uploadResume = async (req, res) => {
 
 export const parseResume = async (req, res) => {
     try {
-        const { resume } = req.body;
+        const { resume, fileName } = req.body;
         if (!resume) return res.status(400).json({ error: 'No resume provided' });
 
         const buffer = Buffer.from(resume, 'base64');
-        const resumeText = await extractText(buffer);
+        const resumeText = await extractText(buffer, fileName);
+
+        if (resumeText.trim().length < 50) {
+            throw new Error('Could not extract text from resume');
+        }
+
         const parsedData = await performAIParsing(resumeText);
 
         if (req.user) {

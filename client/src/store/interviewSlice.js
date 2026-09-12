@@ -37,7 +37,7 @@ const interviewSlice = createSlice({
             state.status = 'Completed';
             state.finalReport = action.payload;
         },
-        clearInterview: (state) => {
+        clearInterview: () => {
             return initialState;
         }
     }

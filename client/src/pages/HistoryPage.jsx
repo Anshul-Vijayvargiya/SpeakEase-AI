@@ -64,7 +64,12 @@ const HistoryPage = () => {
   const [confirmDelete, setConfirmDelete] = useState(null); // { id, type, label }
   const [deleting, setDeleting] = useState(false);
   const [toast, setToast] = useState(null);
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const navigate = useNavigate();
+
+  const ABANDONED_STATUSES = ['Pending', 'In Progress', 'Expired'];
+  const hasAbandoned = sessions.some(s => ABANDONED_STATUSES.includes(s.status));
 
   const showToast = (msg, isError = false) => {
     setToast({ msg, isError });
@@ -105,52 +110,73 @@ const HistoryPage = () => {
     }
   };
 
+  const fetchHistory = async () => {
+    setLoading(true);
+    try {
+      const [interviewRes, aptitudeRes] = await Promise.allSettled([
+        API.get('/interview/history'),
+        API.get('/aptitude/history'),
+      ]);
+
+      const interviews =
+        interviewRes.status === 'fulfilled'
+          ? interviewRes.value.data.map(item => ({
+              ...item,
+              type: 'interview',
+              date: item.createdAt,
+              title: item.role || 'Simulation',
+              scoreValue: computeInterviewScore(item),
+              displayType: item.interviewType || 'simulation',
+              progressLabel: item.status === 'Expired' ? getExpiredProgressLabel(item) : null,
+            }))
+          : [];
+
+      const aptitudes =
+        aptitudeRes.status === 'fulfilled'
+          ? aptitudeRes.value.data.map(item => ({
+              ...item,
+              type: 'aptitude',
+              date: item.completedAt || item.createdAt,
+              title: item.topics && item.topics.length > 0 ? item.topics.join(', ') : 'Aptitude Practice',
+              scoreValue: item.score,
+              displayType: 'aptitude',
+            }))
+          : [];
+
+      const combined = [...interviews, ...aptitudes].sort(
+        (a, b) => new Date(b.date) - new Date(a.date)
+      );
+      setSessions(combined);
+    } catch (err) {
+      console.error('History fetch error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchHistory = async () => {
-      setLoading(true);
-      try {
-        const [interviewRes, aptitudeRes] = await Promise.allSettled([
-          API.get('/interview/history'),
-          API.get('/aptitude/history'),
-        ]);
-
-        const interviews =
-          interviewRes.status === 'fulfilled'
-            ? interviewRes.value.data.map(item => ({
-                ...item,
-                type: 'interview',
-                date: item.createdAt,
-                title: item.role || 'Simulation',
-                scoreValue: computeInterviewScore(item),
-                displayType: item.interviewType || 'simulation',
-                progressLabel: item.status === 'Expired' ? getExpiredProgressLabel(item) : null,
-              }))
-            : [];
-
-        const aptitudes =
-          aptitudeRes.status === 'fulfilled'
-            ? aptitudeRes.value.data.map(item => ({
-                ...item,
-                type: 'aptitude',
-                date: item.completedAt || item.createdAt,
-                title: item.topics && item.topics.length > 0 ? item.topics.join(', ') : 'Aptitude Practice',
-                scoreValue: item.score,
-                displayType: 'aptitude',
-              }))
-            : [];
-
-        const combined = [...interviews, ...aptitudes].sort(
-          (a, b) => new Date(b.date) - new Date(a.date)
-        );
-        setSessions(combined);
-      } catch (err) {
-        console.error('History fetch error:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchHistory();
   }, []);
+
+  const handleBulkDeleteConfirmed = async () => {
+    setBulkDeleting(true);
+    try {
+      const res = await API.delete('/interview/abandoned');
+      const deletedCount = res.data.deleted;
+      showToast(
+        deletedCount === 0
+          ? 'No abandoned sessions found'
+          : `${deletedCount} abandoned sessions cleared`
+      );
+      await fetchHistory();
+    } catch (err) {
+      console.error('Bulk delete error:', err);
+      showToast(err?.response?.data?.error || 'Failed to clear abandoned sessions.', true);
+    } finally {
+      setBulkDeleting(false);
+      setConfirmBulkDelete(false);
+    }
+  };
 
   return (
     <div className="relative min-h-screen bg-[#0c0e14] flex text-white overflow-hidden">
@@ -161,7 +187,17 @@ const HistoryPage = () => {
 
       <Sidebar />
       <main className={`relative z-10 flex-1 p-10 transition-all duration-200 ease-in-out ${collapsed ? 'ml-[72px]' : 'ml-72'}`}>
-        <h1 className="text-3xl font-black mb-8">Practice & Simulator History</h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-black">Practice & Simulator History</h1>
+          {hasAbandoned && (
+            <button
+              onClick={() => setConfirmBulkDelete(true)}
+              className="px-4 py-2 bg-white/5 text-slate-300 border border-white/[0.12] rounded-xl text-xs font-bold hover:bg-white/10 transition-colors"
+            >
+              Clear Abandoned Sessions
+            </button>
+          )}
+        </div>
 
         <div className="bg-white/[0.06] backdrop-blur-lg border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.3)] rounded-[2.5rem] p-10">
           {loading ? (
@@ -281,6 +317,38 @@ const HistoryPage = () => {
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin inline-block" />
                 )}
                 {deleting ? 'Deleting...' : 'Yes, Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Bulk Delete Abandoned Sessions Confirmation Modal ────────── */}
+      {confirmBulkDelete && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#1a1d27] border border-white/10 rounded-2xl p-8 w-full max-w-sm shadow-2xl text-center">
+            <div className="text-4xl mb-4">🧹</div>
+            <h2 className="text-lg font-black text-white mb-2">Clear Abandoned Sessions?</h2>
+            <p className="text-slate-400 text-sm mb-6">
+              This will delete all incomplete and expired sessions. This cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-center">
+              <button
+                onClick={() => setConfirmBulkDelete(false)}
+                disabled={bulkDeleting}
+                className="px-5 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl text-sm font-bold transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleBulkDeleteConfirmed}
+                disabled={bulkDeleting}
+                className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-bold transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {bulkDeleting && (
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin inline-block" />
+                )}
+                {bulkDeleting ? 'Deleting...' : 'Delete All'}
               </button>
             </div>
           </div>

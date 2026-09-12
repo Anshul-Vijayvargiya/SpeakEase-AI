@@ -6,7 +6,9 @@ import useAuthStore from "./store/authStore";
 // Components & Pages
 import LandingPage from "./pages/LandingPage";
 import AuthPage from "./pages/AuthPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import Dashboard from "./pages/Dashboard";
+import ModeSelectionPage from "./pages/ModeSelectionPage";
 import ResumeUploadPage from "./pages/ResumeUploadPage";
 import TargetRolePage from "./pages/TargetRolePage";
 import InterviewSetupPage from "./pages/InterviewSetupPage";
@@ -52,9 +54,11 @@ function App() {
           {/* Public Routes */}
           <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
           <Route path="/auth" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <AuthPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
 
           {/* Protected Routes */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/setup/mode" element={<ProtectedRoute><ModeSelectionPage /></ProtectedRoute>} />
           <Route path="/setup/role" element={<ProtectedRoute><TargetRolePage /></ProtectedRoute>} />
           <Route path="/setup/resume" element={<ProtectedRoute><ResumeUploadPage /></ProtectedRoute>} />
           <Route path="/setup/check" element={<ProtectedRoute><InterviewSetupPage /></ProtectedRoute>} />

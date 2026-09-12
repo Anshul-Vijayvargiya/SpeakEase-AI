@@ -10,6 +10,7 @@ import { signInWithPopup } from 'firebase/auth';
 import { auth, provider } from '../firebase';
 import useAuthStore from '../store/authStore';
 import toast from 'react-hot-toast';
+import API from '../api';
 
 /* ─────────────── Particle Background ─────────────── */
 const ParticleCanvas = () => {
@@ -125,6 +126,11 @@ const AuthPage = () => {
   const navigate = useNavigate();
   const { login, signup, loading } = useAuthStore();
 
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
+
   const [formData, setFormData] = useState({
     name: '', email: '', password: '', college: '', yearOfStudy: '1st Year',
   });
@@ -148,6 +154,31 @@ const AuthPage = () => {
       const res = await signup(formData);
       if (res.success) { toast.success('Account created! 🚀'); navigate('/dashboard'); }
       else toast.error(res.message);
+    }
+  };
+
+  /* ── Forgot password ── */
+  const openForgot = () => {
+    setForgotEmail(formData.email || '');
+    setForgotSent(false);
+    setForgotOpen(true);
+  };
+
+  const closeForgot = () => {
+    if (forgotLoading) return;
+    setForgotOpen(false);
+  };
+
+  const handleForgotSubmit = async (e) => {
+    e.preventDefault();
+    setForgotLoading(true);
+    try {
+      await API.post('/auth/forgot-password', { email: forgotEmail });
+      setForgotSent(true);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Something went wrong. Please try again.');
+    } finally {
+      setForgotLoading(false);
     }
   };
 
@@ -426,6 +457,7 @@ const AuthPage = () => {
                 >
                   <button
                     type="button"
+                    onClick={openForgot}
                     className="text-xs text-violet-400 hover:text-violet-300 font-medium transition-colors"
                   >
                     Forgot password?
@@ -481,6 +513,78 @@ const AuthPage = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* ═══ Forgot Password Modal ═══ */}
+      <AnimatePresence>
+        {forgotOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={closeForgot}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 16, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 16, scale: 0.98 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm bg-[#111116] border border-white/10 rounded-2xl p-6 shadow-2xl"
+            >
+              {forgotSent ? (
+                <>
+                  <h3 className="text-lg font-black text-white mb-2">Check your inbox</h3>
+                  <p className="text-sm text-slate-400 mb-6">
+                    If that email is registered, a reset link has been sent. Check your inbox.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={closeForgot}
+                    className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold text-sm py-3 rounded-xl transition-all duration-200"
+                  >
+                    Done
+                  </button>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-lg font-black text-white mb-1.5">Reset your password</h3>
+                  <p className="text-sm text-slate-400 mb-5">
+                    Enter your account email and we'll send you a reset link.
+                  </p>
+                  <form onSubmit={handleForgotSubmit} className="space-y-4">
+                    <InputField
+                      icon={Mail}
+                      type="email"
+                      name="forgotEmail"
+                      placeholder="Email Address"
+                      value={forgotEmail}
+                      onChange={(e) => setForgotEmail(e.target.value)}
+                      required
+                    />
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={closeForgot}
+                        disabled={forgotLoading}
+                        className="flex-1 bg-white/[0.06] hover:bg-white/[0.10] border border-white/10 text-white font-semibold text-sm py-3 rounded-xl transition-all duration-200 disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={forgotLoading}
+                        className="flex-1 flex items-center justify-center bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 disabled:opacity-50 text-white font-bold text-sm py-3 rounded-xl transition-all duration-200"
+                      >
+                        {forgotLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send link'}
+                      </button>
+                    </div>
+                  </form>
+                </>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

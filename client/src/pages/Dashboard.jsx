@@ -7,7 +7,6 @@ import {
 } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import useAuthStore from '../store/authStore';
-import useSessionStore from '../store/sessionStore';
 import useSidebarStore from '../store/sidebarStore';
 import API from '../api';
 
@@ -89,7 +88,7 @@ const Dashboard = () => {
           {/* Technical Card */}
           <motion.div
             whileHover={{ y: -5 }}
-            onClick={() => navigate('/setup/role?type=technical')}
+            onClick={() => navigate('/setup/mode?type=technical')}
             className="group relative h-64 bg-gradient-to-br from-blue-600 to-indigo-700 border border-white/[0.12] rounded-[3rem] p-10 flex flex-col justify-between overflow-hidden cursor-pointer shadow-2xl shadow-blue-900/20"
           >
             <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:scale-110 transition-transform duration-500">
@@ -110,12 +109,7 @@ const Dashboard = () => {
           {/* HR Card */}
           <motion.div
             whileHover={{ y: -5 }}
-            onClick={() => {
-              useSessionStore.getState().setInterviewType('hr');
-              useSessionStore.getState().setRole({ title: 'Candidate', id: 'candidate', topics: [] });
-              useSessionStore.getState().setExperienceLevel('Any');
-              navigate('/setup/resume');
-            }}
+            onClick={() => navigate('/setup/mode?type=hr')}
             className="group relative h-64 bg-gradient-to-br from-purple-600 to-pink-700 border border-white/[0.12] rounded-[3rem] p-10 flex flex-col justify-between overflow-hidden cursor-pointer shadow-2xl shadow-purple-900/20"
           >
             <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:scale-110 transition-transform duration-500">

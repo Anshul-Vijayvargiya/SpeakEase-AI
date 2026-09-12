@@ -26,7 +26,7 @@ const AptitudePage = () => {
   const [answers,     setAnswers]     = useState([]);
   const [answered,    setAnswered]    = useState(false);
   const [selected,    setSelected]    = useState(null);
-  const [skipped,     setSkipped]     = useState(false);
+  const [,            setSkipped]     = useState(false);
 
   // ── Result state ───────────────────────────────────────────────────────────
   const [results,   setResults]   = useState([]);
@@ -116,9 +116,6 @@ const AptitudePage = () => {
       setTimeTaken(elapsed);
 
       try {
-        const user  = JSON.parse(localStorage.getItem('user') || '{}');
-        const userId = user?._id || user?.id;
-
         const res = await API.post(
           '/aptitude/submit',
           { sessionId, answers: newAnswers, timeTaken: elapsed },

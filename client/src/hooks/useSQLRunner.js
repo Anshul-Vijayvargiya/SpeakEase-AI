@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import initSqlJs from 'sql.js';
 
 export const useSQLRunner = () => {
-    const [db, setDb] = useState(null);
+    const [, setDb] = useState(null);
     const [isReady, setIsReady] = useState(false);
     const [error, setError] = useState(null);
     const dbRef = useRef(null);

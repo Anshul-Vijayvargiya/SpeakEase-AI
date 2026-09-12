@@ -1,5 +1,6 @@
 import express from 'express';
 import multer from 'multer';
+import rateLimit from 'express-rate-limit';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const pdfParse = require('pdf-parse');
@@ -12,9 +13,17 @@ import { extractJSON } from '../utils/jsonHelper.js';
 
 const router = express.Router();
 
+const resumeLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 10,
+  message: { error: 'Too many resume uploads. Please try again in an hour.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // New combined routes
 router.post('/upload', verifyToken, uploadResume);
-router.post('/parse', verifyToken, parseResume);
+router.post('/parse', verifyToken, resumeLimiter, parseResume);
 
 const upload = multer({
   storage: multer.memoryStorage(),

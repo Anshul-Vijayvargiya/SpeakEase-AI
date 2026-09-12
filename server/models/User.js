@@ -14,6 +14,8 @@ const userSchema = new mongoose.Schema({
   resumeData: { type: Object, default: null },
   targetCompanies: [{ type: String }],
   plan: { type: String, enum: ['free', 'pro'], default: 'free' },
+  resetPasswordTokenHash: { type: String, default: null },
+  resetPasswordExpires: { type: Date, default: null },
   stats: {
     readinessScore: { type: Number, default: 0 },
     interviewsTaken: { type: Number, default: 0 },

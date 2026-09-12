@@ -69,7 +69,7 @@ const Review = () => {
       setData(res.data);
       const status = res.data?.session?.status;
       setPolling(status === 'processing');
-    } catch (err) {
+    } catch {
       toast.error('Failed to load review');
     } finally {
       if (showInitialLoader) setLoading(false);
@@ -91,7 +91,7 @@ const Review = () => {
     () => [...(data?.events || [])].sort((a, b) => (a.timestampMs || 0) - (b.timestampMs || 0)),
     [data]
   );
-  const analytics = data?.analytics || {};
+  const analytics = useMemo(() => data?.analytics || {}, [data]);
   const durationSec = Math.max(1, Math.floor((session?.durationMs || 0) / 1000));
 
   const communicationScore = useMemo(() => {
@@ -160,7 +160,7 @@ const Review = () => {
     try {
       await navigator.clipboard.writeText(analytics.feedbackReport || '');
       toast.success('Report copied to clipboard');
-    } catch (err) {
+    } catch {
       toast.error('Failed to copy report');
     }
   };

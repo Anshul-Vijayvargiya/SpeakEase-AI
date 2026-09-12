@@ -44,7 +44,7 @@ const Section = ({ icon: Icon, title, subtitle, children, delay = 0 }) => (
 );
 
 /* ── Labelled input ── */
-const Field = ({ label, icon: Icon, disabled, hint, children }) => (
+const Field = ({ label, icon: Icon, hint, children }) => (
   <div className="space-y-1.5">
     <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 uppercase tracking-wider">
       {Icon && <Icon className="w-3.5 h-3.5" />}
@@ -106,7 +106,7 @@ const StatChip = ({ label, value, color }) => (
 
 /* ══════════════════════════════════ PAGE ══════════════════════════════════ */
 const SettingsPage = () => {
-  const { user: storeUser, logout } = useAuthStore();
+  const { user: storeUser } = useAuthStore();
   const { collapsed } = useSidebarStore();
   const [avatarGrad, setAvatarGrad] = useState(0);
   const [showPw, setShowPw] = useState(false);

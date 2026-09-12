@@ -27,7 +27,7 @@ const ReportDashboard = () => {
       try {
         const res = await API.get(`/interview/${id}/report`);
         setData(res.data);
-      } catch (err) {
+      } catch {
         toast.error("Failed to load report");
       }
     };

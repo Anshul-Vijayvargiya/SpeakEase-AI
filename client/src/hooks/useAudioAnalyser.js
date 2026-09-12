@@ -1,5 +1,10 @@
 import { useState, useRef, useCallback } from "react";
 
+const FILLER_WORDS = [
+  "um","uh","umm","uhh","like","basically",
+  "actually","you know","i mean","right","so","okay"
+];
+
 const useAudioAnalyser = () => {
   const [transcript, setTranscript]     = useState("");
   const [isListening, setIsListening]   = useState(false);
@@ -15,11 +20,6 @@ const useAudioAnalyser = () => {
     setIsListening(val);
     isListeningRef.current = val;
   }, []);
-
-  const FILLER_WORDS = [
-    "um","uh","umm","uhh","like","basically",
-    "actually","you know","i mean","right","so","okay"
-  ];
 
   const startListening = useCallback(() => {
     // ALWAYS ask for mic permission first
@@ -153,12 +153,14 @@ const useAudioAnalyser = () => {
     fillerEventsRef.current = [];
   }, []);
 
+  const getFillerEvents = useCallback(() => fillerEventsRef.current, []);
+
   return {
     transcript,
     isListening,
     fillerCount,
     wpm,
-    fillerEvents: fillerEventsRef.current,
+    getFillerEvents,
     startListening,
     stopListening,
     resetTranscript,

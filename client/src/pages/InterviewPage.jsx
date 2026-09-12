@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -19,16 +19,16 @@ import useTTS from '../hooks/useTTS';
 const InterviewPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { 
-    questions, currentIndex, currentRound, status, 
-    nextQuestion, setQuestions, updateMetrics,
+  const {
+    questions, currentIndex, currentRound, status,
+    nextQuestion, setQuestions,
     difficulty: sessionDifficulty
   } = useSessionStore();
 
   const { speak, stop: stopSpeaking, isSpeaking: isAiSpeaking } = useTTS();
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [timer, setTimer] = useState(0);
-  const [answerState, setAnswerState] = useState("idle");
+  const [, setAnswerState] = useState("idle");
   
   const canvasRef = useRef(null);
   const mediaRecorderRef = useRef(null);
@@ -37,7 +37,7 @@ const InterviewPage = () => {
 
   const videoRef = useRef(null);
   const { eyeContactPercent, attentionPercent, expression, resetEyeData } = useFaceMesh(videoRef);
-  const { transcript, isListening, fillerCount, fillerEvents, wpm, startListening, stopListening, resetTranscript } = useAudioAnalyser();
+  const { transcript, isListening, fillerCount, getFillerEvents, wpm, startListening, stopListening, resetTranscript } = useAudioAnalyser();
 
   const currentQuestion = questions[currentIndex];
 
@@ -146,7 +146,7 @@ const InterviewPage = () => {
         };
 
         recorder.start(1000); // 1s chunks
-      } catch (err) {
+      } catch {
         toast.error("Media access failed");
       }
     };
@@ -261,7 +261,7 @@ const InterviewPage = () => {
           attention: attentionPercent,
           expression: expression,
           fillerCount: fillerCount,
-          fillerWords: fillerEvents.map(e => e.word),
+          fillerWords: getFillerEvents().map(e => e.word),
           wpm: wpm
         }
       });
@@ -269,18 +269,12 @@ const InterviewPage = () => {
       resetTranscript();
       resetEyeData();   // fresh eye-contact tracking per question
       nextQuestion();
-    } catch (err) {
+    } catch {
       toast.error("Failed to submit answer");
     } finally {
       setIsEvaluating(false);
       setAnswerState("idle");
     }
-  };
-
-  const formatTime = (s) => {
-    const mins = Math.floor(s / 60);
-    const secs = s % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   if (status === 'idle') return (

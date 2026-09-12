@@ -11,7 +11,7 @@ import toast from 'react-hot-toast';
 
 const InterviewSetupPage = () => {
   const navigate = useNavigate();
-  const { role, experienceLevel, resumeData, skipResume, difficulty, setDifficulty, setSessionId, setQuestions, interviewType } = useSessionStore();
+  const { role, experienceLevel, skipResume, difficulty, setDifficulty, setSessionId, setQuestions, interviewType } = useSessionStore();
   
   const videoRef = useRef(null);
   const [checks, setChecks] = useState({
@@ -56,7 +56,7 @@ const InterviewSetupPage = () => {
           requestAnimationFrame(updateLevel);
         };
         updateLevel();
-      } catch (err) {
+      } catch {
         setChecks(prev => ({
           ...prev,
           camera: { status: 'error', label: 'Camera Not Found' },
@@ -70,7 +70,7 @@ const InterviewSetupPage = () => {
       try {
         await API.get('/test');
         setChecks(prev => ({ ...prev, internet: { status: 'success', label: 'Connected' } }));
-      } catch (err) {
+      } catch {
         setChecks(prev => ({ ...prev, internet: { status: 'error', label: 'Slow Connection' } }));
       }
     };

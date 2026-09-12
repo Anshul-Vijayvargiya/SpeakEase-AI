@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -12,7 +12,7 @@ import toast from 'react-hot-toast';
 
 const ResumeUploadPage = () => {
   const navigate = useNavigate();
-  const { setResumeData, setSkipResume, role, interviewType } = useSessionStore();
+  const { setResumeData, setSkipResume, interviewType, skipResume } = useSessionStore();
   
   const [file, setFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -75,7 +75,7 @@ const ResumeUploadPage = () => {
         }
         setIsUploading(false);
       };
-    } catch (err) {
+    } catch {
       toast.error("Failed to process resume");
       setIsUploading(false);
     }
@@ -150,7 +150,7 @@ const ResumeUploadPage = () => {
                 )}
               </button>
               
-              {interviewType !== 'hr' && (
+              {interviewType !== 'hr' && skipResume && (
                 <button
                   onClick={() => {
                     setResumeData(null);
