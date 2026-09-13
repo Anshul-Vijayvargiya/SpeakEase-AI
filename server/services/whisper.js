@@ -2,8 +2,12 @@ import OpenAI, { toFile } from 'openai';
 import Event from '../models/Event.js';
 import Session from '../models/Session.js';
 
+if (!process.env.OPENAI_WHISPER_KEY) {
+  console.warn('WARNING: OPENAI_WHISPER_KEY not set — Whisper transcription may fail if OPENAI_API_KEY is an OpenRouter key');
+}
+
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_WHISPER_KEY || process.env.OPENAI_API_KEY
 });
 
 const FILLERS = ['um', 'uh', 'like', 'basically', 'literally', 'you know', 'kind of'];
